@@ -11,6 +11,7 @@ const envConfig = {
   reCaptchaEndpoint: process.env.RECAPTCHAENDPOINT as string,
   recaptchaKey: process.env.RECAPTCHAKEY as string,
   websiteKey: process.env.WEBSITEKEY as string,
+  secretKey: process.env.SECTECT_TOKEN_KEY as string,
 };
 
 export default envConfig;
