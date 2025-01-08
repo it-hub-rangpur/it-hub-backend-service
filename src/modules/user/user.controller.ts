@@ -4,7 +4,7 @@ import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { userService } from "./user.service";
 
-const createNewUser = catchAsync(async (req: Request, res: Response) => {
+const create = catchAsync(async (req: Request, res: Response) => {
   const response = await userService.create(req.body);
   console.log(response);
 
@@ -16,6 +16,17 @@ const createNewUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAll = catchAsync(async (req: Request, res: Response) => {
+  const response = await userService.getAll();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User Get Successfully!",
+    data: response,
+  });
+});
+
 export const userController = {
-  createNewUser,
+  create,
+  getAll,
 };
