@@ -3,6 +3,7 @@ import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { userService } from "./user.service";
+import { IUser } from "./user.interface";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const response = await userService.create(req.body);
@@ -11,6 +12,17 @@ const create = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.CREATED,
     success: true,
     message: "User Created Successfully!",
+    data: response,
+  });
+});
+
+const login = catchAsync(async (req: Request, res: Response) => {
+  const response = await userService.login(req.body);
+
+  sendResponse<string>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User logged in successfully!",
     data: response,
   });
 });
@@ -25,7 +37,21 @@ const getAll = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const auth = catchAsync(async (req: Request, res: Response) => {
+  const user: Partial<IUser> = req.user!;
+  const response = await userService.getOne(user?._id!);
+
+  sendResponse<IUser>(res, {
+    statusCode: 200,
+    success: true,
+    message: "Login User Recvied Successfully!",
+    data: response,
+  });
+});
+
 export const userController = {
   create,
   getAll,
+  login,
+  auth,
 };
