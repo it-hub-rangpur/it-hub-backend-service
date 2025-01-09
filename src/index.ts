@@ -1,6 +1,6 @@
-import app from "./app";
 import mongoose from "mongoose";
 import env from "./configs/envConfig";
+import AppServer from "./socket";
 
 const uri: string | undefined =
   env.node_environment !== "production"
@@ -8,14 +8,10 @@ const uri: string | undefined =
     : env.db_uri;
 
 async function dbConnection() {
-  // app.listen(port, () => {
-  //   console.log(`server is listening on port: ${port}`);
-  // });
-
   try {
     if (uri) {
       await mongoose.connect(uri as string);
-      app.listen(env.port, () => {
+      AppServer.listen(env.port, () => {
         console.log(`server is listening on port: ${env.port}`);
       });
     } else {
