@@ -17,6 +17,27 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const create = catchAsync(async (req: Request, res: Response) => {
+  await messagesService.create(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Messages Created Successfully!",
+  });
+});
+
+const getAll = catchAsync(async (req: Request, res: Response) => {
+  const response = await messagesService.getAll();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Messages Get Successfully!",
+    data: response,
+  });
+});
+
 export const messagesController = {
   sendMessage,
+  create,
+  getAll,
 };
