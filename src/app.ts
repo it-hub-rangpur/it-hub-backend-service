@@ -6,8 +6,25 @@ import globalErrorHandler from "./middlewares/GlobalErrorHandelar";
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://it-hub-client-service.vercel.app",
+      "https://payment.ivacbd.com",
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    credentials: true,
+  })
+);
+
+app.use(
+  express.json({
+    limit: "50mb",
+  })
+);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("It-Hub Server is Running...");
