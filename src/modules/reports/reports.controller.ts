@@ -14,6 +14,17 @@ const getAvailableDatetime = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const testServer = catchAsync(async (req: Request, res: Response) => {
+  const result = await reportsService.testServer();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Server is Running!",
+    data: result,
+  });
+});
+
 export const reportsController = {
   getAvailableDatetime,
+  testServer,
 };
