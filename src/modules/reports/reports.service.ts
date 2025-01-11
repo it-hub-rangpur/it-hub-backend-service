@@ -1,5 +1,7 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import { testServerDom } from "../../utils/DomApi";
+import axios from "axios";
 
 puppeteer.use(StealthPlugin());
 
@@ -53,7 +55,6 @@ const getAvailableDatetime = async () => {
       availableDate = date;
       availableTime = time;
     }
-
     await browser.close();
     return {
       availableDate,
@@ -66,7 +67,26 @@ const getAvailableDatetime = async () => {
   }
 };
 
+const cookies = ""; // Replace with actual cookies if needed
+
+const headers = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+  "Accept-Language": "en-US,en;q=0.9",
+  Referer: "https://payment.ivacbd.com/",
+  Origin: "https://payment.ivacbd.com",
+  "Accept-Encoding": "gzip, compress, deflate, br",
+  Cookie: cookies,
+  // Include CSRF Token or any other necessary headers
+  // 'X-CSRF-TOKEN': csrfToken,
+};
+
+const testServer = async () => {
+  return [];
+};
+
 // Export the service
 export const reportsService = {
   getAvailableDatetime,
+  testServer,
 };
