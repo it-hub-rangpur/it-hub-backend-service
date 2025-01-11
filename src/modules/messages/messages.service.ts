@@ -6,7 +6,9 @@ const sendMessage = async (payload: string) => {
 };
 
 const create = async (payload: IMessage) => {
-  const response = await Message.create(payload);
+  const response = await Message.create({
+    data: payload,
+  });
   return response;
 };
 
