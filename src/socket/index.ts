@@ -9,7 +9,15 @@ interface User {
 }
 
 const AppServer = http.createServer(app);
-const io = new SocketIOServer(AppServer, { transports: ["websocket"] });
+
+const io = new SocketIOServer(AppServer, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"],
+    credentials: true, // Allow credentials
+  },
+  transports: ["websocket"],
+});
 
 io.on("connection", (socket: Socket) => {
   console.log("New client connected:", socket.id);
