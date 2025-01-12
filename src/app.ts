@@ -23,11 +23,13 @@ app.use(
   })
 );
 
-app.use(
-  express.json({
-    limit: "50mb",
-  })
-);
+app.use(express.json({ limit: "50mb" }));
+
+// app.use(
+//   express.json({
+//     limit: "50mb",
+//   })
+// );
 
 app.get("/", (req: Request, res: Response) => {
   res.send("It-Hub Server is Running...");

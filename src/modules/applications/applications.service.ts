@@ -45,6 +45,7 @@ const getReadyApplications = async () => {
         web_id_repeat: data?.bgdId,
         name: data?.name,
         phone: item?.phone,
+        otp: item?.otp,
         email: item?.email,
         amount: 800.0,
         center: centers[item?.center],
@@ -60,7 +61,8 @@ const getReadyApplications = async () => {
       apiKey: "",
       action: "sendOtp",
       resend: 0,
-      hash_params: "",
+      otp: item?.otp,
+      hash_params: item?.hash_params,
       info,
     };
   });
