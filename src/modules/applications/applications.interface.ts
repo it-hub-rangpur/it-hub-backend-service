@@ -8,6 +8,8 @@ export interface IApplication extends Document {
   visaType: number;
   email: string;
   phone: string;
+  otp: string;
+  hash_params: string;
   info: { name: string; bgdId: string }[];
   status: boolean;
 }
