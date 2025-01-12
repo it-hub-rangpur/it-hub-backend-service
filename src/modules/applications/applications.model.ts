@@ -41,6 +41,16 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
         },
       },
     ],
+    otp: {
+      type: String,
+      maxlength: 6,
+      minlength: 6,
+      default: "",
+    },
+    hash_params: {
+      type: String,
+      default: "",
+    },
     status: {
       type: Boolean,
       default: false,

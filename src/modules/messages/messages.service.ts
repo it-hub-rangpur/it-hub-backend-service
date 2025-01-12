@@ -1,3 +1,4 @@
+import Application from "../applications/applications.model";
 import Message, { IMessage } from "./messages.model";
 
 const sendMessage = async (payload: string) => {
@@ -12,6 +13,14 @@ const create = async (payload: IMessage) => {
   return response;
 };
 
+const autoOtp = async ({ to, otp }: { to: string; otp: string }) => {
+  const response = await Application.updateOne({
+    phone: to,
+    otp: otp,
+  });
+  return response;
+};
+
 const getAll = async () => {
   const response = await Message.find({}).sort({ createdAt: -1 });
   return response;
@@ -21,4 +30,5 @@ export const messagesService = {
   sendMessage,
   create,
   getAll,
+  autoOtp,
 };

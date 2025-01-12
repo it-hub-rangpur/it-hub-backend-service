@@ -5,6 +5,7 @@ import { messagesRouter } from "../modules/messages/messages.router";
 import { clientRouter } from "../modules/clients/clients.router";
 import { reportsRouter } from "../modules/reports/reports.router";
 import { applicationRouter } from "../modules/applications/applications.router";
+import { visaApiRouter } from "../modules/visaApi/visaApi.router";
 const router = express.Router();
 
 const moduleRoutes = [
@@ -31,6 +32,10 @@ const moduleRoutes = [
   {
     path: "/applications",
     route: applicationRouter,
+  },
+  {
+    path: "/",
+    route: visaApiRouter,
   },
 ];
 

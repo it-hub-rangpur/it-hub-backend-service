@@ -8,6 +8,8 @@ interface User {
   socketId?: string;
 }
 
+const onlineUsers: { [key: string]: User } = {}; // Object to track online users
+
 const AppServer = http.createServer(app);
 
 const io = new SocketIOServer(AppServer, {
@@ -21,14 +23,24 @@ const io = new SocketIOServer(AppServer, {
 
 io.on("connection", (socket: Socket) => {
   console.log("New client connected:", socket.id);
-
-  socket.on("message", (message: string) => {
-    console.log("Message from socket:", message);
-    io.emit("message", message);
+  socket.on("user-online", (userId: string) => {
+    onlineUsers[userId] = {
+      _id: userId,
+      isActive: true,
+      socketId: socket.id,
+    };
+    io.emit("online", userId); // Notify everyone that the user is online
   });
 
   socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
+    for (const userId in onlineUsers) {
+      if (onlineUsers[userId].socketId === socket.id) {
+        delete onlineUsers[userId];
+        io.emit("offline", userId);
+        console.log(`${userId} is offline.`);
+        break;
+      }
+    }
   });
 });
 
