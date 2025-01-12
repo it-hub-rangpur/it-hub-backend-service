@@ -9,6 +9,7 @@ const app = express();
 export const allowedOrigins = [
   "https://payment.ivacbd.com",
   "https://it-hub.programmerhub.xyz",
+  "https://it-hub-client-service.vercel.app",
   "http://localhost:3000",
   "http://localhost:5000",
 ];
