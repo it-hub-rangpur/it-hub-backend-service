@@ -30,6 +30,13 @@ const updateOne = async (id: string, payload: IApplication) => {
   return response;
 };
 
+const updateByPhone = async (phone: string, payload: Partial<IApplication>) => {
+  const response = await Application.findOneAndUpdate({ phone }, payload, {
+    new: true,
+  });
+  return response;
+};
+
 const deleteOne = async (id: string) => {
   const response = await Application.findByIdAndDelete(id);
   return response;
@@ -76,4 +83,5 @@ export const applicationService = {
   updateOne,
   deleteOne,
   getReadyApplications,
+  updateByPhone,
 };

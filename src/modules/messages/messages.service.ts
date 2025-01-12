@@ -2,7 +2,6 @@ import Application from "../applications/applications.model";
 import Message, { IMessage } from "./messages.model";
 
 const sendMessage = async (payload: string) => {
-  console.log(payload);
   return payload;
 };
 

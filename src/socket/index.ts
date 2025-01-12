@@ -1,6 +1,7 @@
 import http from "http";
 import app, { allowedOrigins } from "../app";
 import { Server as SocketIOServer, Socket } from "socket.io";
+import { applicationService } from "../modules/applications/applications.service";
 
 interface User {
   _id: string;
@@ -30,6 +31,25 @@ io.on("connection", (socket: Socket) => {
       socketId: socket.id,
     };
     io.emit("online", userId); // Notify everyone that the user is online
+  });
+
+  socket.on("otp-send", async ({ phone, isTesting }) => {
+    if (isTesting) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const randomDelay = Math.floor(Math.random() * 4000) + 1000;
+      setTimeout(() => {
+        io.emit("otp-get", { otp, to: phone });
+      }, randomDelay);
+    }
+    await applicationService.updateByPhone(phone, {
+      resend: 1,
+    });
+  });
+
+  socket.on("otp-verified", async ({ phone, otp }) => {
+    await applicationService.updateByPhone(phone, {
+      otp: otp,
+    });
   });
 
   socket.on("disconnect", () => {

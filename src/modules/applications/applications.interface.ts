@@ -12,6 +12,7 @@ export interface IApplication extends Document {
   hash_params: string;
   info: { name: string; bgdId: string }[];
   status: boolean;
+  resend: number;
 }
 
 export interface IApplicationModel extends Model<IApplication, {}, {}> {}

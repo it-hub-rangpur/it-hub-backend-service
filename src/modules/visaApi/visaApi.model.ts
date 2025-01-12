@@ -29,35 +29,7 @@ export const getVerifySuccessResponse = {
   status: "SUCCESS",
   code: 200,
   data: {
-    slot_times: [
-      {
-        id: 142049,
-        ivac_id: 17,
-        visa_type: 13,
-        hour: 10,
-        date: "2024-10-17",
-        availableSlot: 1,
-        time_display: "10:00 - 10:59",
-      },
-      {
-        id: 142049,
-        ivac_id: 17,
-        visa_type: 13,
-        hour: 10,
-        date: "2024-10-17",
-        availableSlot: 1,
-        time_display: "11:00 - 11:59",
-      },
-      {
-        id: 142049,
-        ivac_id: 17,
-        visa_type: 13,
-        hour: 10,
-        date: "2024-10-17",
-        availableSlot: 1,
-        time_display: "12:00 - 01:59",
-      },
-    ],
+    slot_times: [],
     slot_dates: [dateAfter5Days], //"2024-10-16" dateAfter5Days
     status: true,
     error_reason: "",
@@ -85,4 +57,45 @@ export const getVerifyErrorResponse = {
     error_reason: "OTP not found with this mobile number",
   },
   message: ["OTP not found with this mobile number"],
+};
+
+export const getTimesSlotsSuccessResponse = {
+  status: "OK",
+  data: [""],
+  slot_dates: ["2024-10-17"],
+  slot_times: [
+    {
+      id: 142049,
+      ivac_id: 17,
+      visa_type: 13,
+      hour: 10,
+      date: "2024-10-17",
+      availableSlot: 1,
+      time_display: "10:00 - 10:59",
+    },
+    {
+      id: 142049,
+      ivac_id: 17,
+      visa_type: 13,
+      hour: 10,
+      date: "2024-10-17",
+      availableSlot: 1,
+      time_display: "11:00 - 11:59",
+    },
+  ],
+};
+
+export const getTimesSlotsErrorResponse = {
+  status: "FAIL",
+  data: [""],
+  slot_dates: [],
+  slot_times: [],
+  message: ["Something wrong..."],
+};
+
+export const getPaymentUrlSuccessResponse = {
+  status: "OK",
+  data: {
+    url: "https://www.example.payment-link.com/",
+  },
 };

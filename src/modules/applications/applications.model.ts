@@ -55,6 +55,10 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       type: Boolean,
       default: false,
     },
+    resend: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
