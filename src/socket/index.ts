@@ -14,11 +14,11 @@ const AppServer = http.createServer(app);
 
 const io = new SocketIOServer(AppServer, {
   cors: {
-    origin: allowedOrigins, // Allow all origins
+    origin: allowedOrigins, // Correct origin
     methods: ["GET", "POST"],
     credentials: true, // Allow credentials
   },
-  transports: ["websocket"],
+  transports: ["websocket", "polling"], // Ensure fallback to polling
 });
 
 io.on("connection", (socket: Socket) => {
