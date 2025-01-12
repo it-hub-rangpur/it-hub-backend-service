@@ -6,9 +6,16 @@ import globalErrorHandler from "./middlewares/GlobalErrorHandelar";
 
 const app = express();
 
+export const allowedOrigins = [
+  "https://payment.ivacbd.com",
+  "https://it-hub.programmerhub.xyz",
+  "http://localhost:3000",
+  "http://localhost:5000",
+];
+
 app.use(
   cors({
-    origin: "*",
+    origin: allowedOrigins,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,

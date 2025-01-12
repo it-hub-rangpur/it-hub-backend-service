@@ -1,5 +1,5 @@
 import http from "http";
-import app from "../app";
+import app, { allowedOrigins } from "../app";
 import { Server as SocketIOServer, Socket } from "socket.io";
 
 interface User {
@@ -12,7 +12,7 @@ const AppServer = http.createServer(app);
 
 const io = new SocketIOServer(AppServer, {
   cors: {
-    origin: "*", // Allow all origins
+    origin: allowedOrigins, // Allow all origins
     methods: ["GET", "POST"],
     credentials: true, // Allow credentials
   },
