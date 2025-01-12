@@ -37,14 +37,18 @@ const autoOtp = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
   const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
 
+  const messageBody = payload?.key?.split("\n")[1];
+  const OTP = messageBody
+    ?.split("is your one time password for verification")[0]
+    ?.trim();
+
   const to = req?.query?.to as string;
-  const otp = payload?.key?.split("Body:")[1]?.split(" ")[1]?.trim() as string;
 
-  socketIo.emit("message", { payload, to, otp });
+  socketIo.emit("message", { payload, to, OTP });
 
-  if (otp?.length === 6) {
-    socketIo.emit("otp-get", { to, otp });
-    await messagesService.autoOtp({ to, otp });
+  if (OTP?.length === 6) {
+    socketIo.emit("otp-get", { to, otp: OTP });
+    await messagesService.autoOtp({ to, otp: OTP });
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
