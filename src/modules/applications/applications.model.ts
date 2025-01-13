@@ -45,7 +45,6 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       type: String,
       maxlength: 6,
       minlength: 6,
-      default: "",
     },
     hash_params: {
       type: String,
