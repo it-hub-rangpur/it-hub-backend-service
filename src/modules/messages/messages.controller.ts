@@ -7,13 +7,17 @@ import { socketIo } from "../../socket";
 import { IMessage } from "./messages.model";
 
 const sendMessage = catchAsync(async (req: Request, res: Response) => {
-  const result = await messagesService.sendMessage("its works!");
-  socketIo.emit("message", result);
+  const params = req.params;
+  const query = req.query;
+  const body = req.body;
+
+  // const result = await messagesService.sendMessage("its works!");
+  socketIo.emit("message", { body, params, query });
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Messages send Successfully!",
-    data: result,
+    data: { body, params, query },
   });
 });
 
