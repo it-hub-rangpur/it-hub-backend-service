@@ -4,6 +4,7 @@ import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { messagesService } from "./messages.service";
 import { socketIo } from "../../socket";
+import { IMessage } from "./messages.model";
 
 const sendMessage = catchAsync(async (req: Request, res: Response) => {
   const result = await messagesService.sendMessage("its works!");
@@ -19,7 +20,7 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
 const create = catchAsync(async (req: Request, res: Response) => {
   const result = await messagesService.create(req.body);
 
-  socketIo.emit("message", result);
+  socketIo.emit("message", { result, data: req.body });
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -28,36 +29,45 @@ const create = catchAsync(async (req: Request, res: Response) => {
 });
 
 const autoOtp = catchAsync(async (req: Request, res: Response) => {
+  const body = req.query.msg as IMessage["data"];
+  const result = await messagesService.create(body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Messages Created Successfully!",
+  });
+
   // const payload = {
   // time: "01/11, 11:12 PM",
   // key: "From : +8801708404440, \nTo: ,\nBody: 786567 is your one time password for verification",
   // };
 
-  const payload = req.body;
-  const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
+  // const payload = req.body;
+  // const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
 
-  const messageBody = payload?.key?.split("\n")[1];
-  const OTP = messageBody
-    ?.split("is your one time password for verification")[0]
-    ?.trim();
+  // const messageBody = payload?.key?.split("\n")[1];
+  // const OTP = messageBody
+  //   ?.split("is your one time password for verification")[0]
+  //   ?.trim();
 
-  const to = req?.query?.to as string;
+  // const to = req?.query?.to as string;
 
-  if (OTP?.length === 6) {
-    socketIo.emit("otp-get", { to, otp: OTP });
-    await messagesService.autoOtp({ to, otp: OTP });
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "OTP Get Successfully!",
-    });
-  } else {
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Message Received!",
-    });
-  }
+  // if (OTP?.length === 6) {
+  //   socketIo.emit("otp-get", { to, otp: OTP });
+  //   await messagesService.autoOtp({ to, otp: OTP });
+  //   sendResponse(res, {
+  //     statusCode: httpStatus.OK,
+  //     success: true,
+  //     message: "OTP Get Successfully!",
+  //   });
+  // } else {
+  //   sendResponse(res, {
+  //     statusCode: httpStatus.OK,
+  //     success: true,
+  //     message: "Message Received!",
+  //   });
+  // }
 });
 
 const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
