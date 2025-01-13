@@ -18,9 +18,11 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
 });
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  const result = await messagesService.create(req.body);
+  // const result = await messagesService.create(req.body);
+  const params = req.params;
+  const query = req.query;
 
-  socketIo.emit("message", { result, data: req.body });
+  socketIo.emit("message", { data: req.body, params, query });
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
