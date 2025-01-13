@@ -86,7 +86,10 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
     ?.split("is your one time password for verification")[0]
     ?.trim();
 
-  socketIo.emit("message", { OTP, form, phone });
+  socketIo.emit("send-otp", { OTP, form, phone });
+  if (OTP?.length === 6) {
+    socketIo.emit("otp-get", { to: phone, otp: OTP });
+  }
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
