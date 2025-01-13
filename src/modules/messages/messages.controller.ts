@@ -79,27 +79,37 @@ const autoOtp = catchAsync(async (req: Request, res: Response) => {
 const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
   const phone = req.params.phone;
+  const params = req.params;
+  const query = req.query;
+  const body = req.body;
 
-  const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
-  const messageBody = payload?.key?.split("\n")[1];
-  const OTP = messageBody
-    ?.split("is your one time password for verification")[0]
-    ?.trim();
+  socketIo.emit("message", { body, params, query });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Message Received!",
+  });
 
-  if (OTP?.length === 6) {
-    socketIo.emit("otp-get", { to: phone, otp: OTP });
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "OTP Get Successfully!",
-    });
-  } else {
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Message Received!",
-    });
-  }
+  // const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
+  // const messageBody = payload?.key?.split("\n")[1];
+  // const OTP = messageBody
+  //   ?.split("is your one time password for verification")[0]
+  //   ?.trim();
+
+  // if (OTP?.length === 6) {
+  //   socketIo.emit("otp-get", { to: phone, otp: OTP });
+  //   sendResponse(res, {
+  //     statusCode: httpStatus.OK,
+  //     success: true,
+  //     message: "OTP Get Successfully!",
+  //   });
+  // } else {
+  //   sendResponse(res, {
+  //     statusCode: httpStatus.OK,
+  //     success: true,
+  //     message: "Message Received!",
+  //   });
+  // }
 });
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
