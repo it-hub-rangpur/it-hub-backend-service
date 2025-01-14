@@ -1,0 +1,103 @@
+[
+  {
+    "_token": "EanOLKZ42AMHNINafCkSW3JTis5f9ul5dzc0K6Dx",
+    "apiKey": "EanOLKZ42AMHNINafCkSW3JTis5f9ul5dzc0K6Dx",
+    "action": "generateSlotTime",
+    "amount": 10,
+    "ivac_id": 2,
+    "visa_type": 13,
+    "specific_date": "Not Available",
+    "info": [
+      {
+        "web_id": "BGDRV00E1225",
+        "name": "MD ROBIUL ISLAM",
+        "phone": "01760567555",
+        "email": "SHOHAGROY@YAHOO.COM",
+        "otp": "",
+        "is_open": true,
+        "appointment_time": "Not Available",
+        "confirm_tos": true,
+        "amountChangeData": {
+          "allow_old_amount_until_new_date": 2,
+          "max_notification_count": 0,
+          "old_visa_fees": "800.00",
+          "new_fees_applied_from": "2018-08-05 00:00:00",
+          "notice": false,
+          "notice_short": "",
+          "notice_popup": "",
+          "new_visa_fee": "800.00"
+        },
+        "center": { "id": 3, "c_name": "Rajshahi", "prefix": "R" },
+        "ivac": {
+          "id": 2,
+          "center_info_id": 3,
+          "ivac_name": "IVAC , RAJSHAHI",
+          "prefix": "R",
+          "app_key": "IVACRAJSHAHI"
+        },
+        "visa_type": {
+          "id": 13,
+          "type_name": "MEDICAL/MEDICAL ATTENDANT VISA",
+          "is_active": 1
+        }
+      }
+    ]
+  },
+
+  {
+    "_token": "EanOLKZ42AMHNINafCkSW3JTis5f9ul5dzc0K6Dx",
+    "apiKey": "EanOLKZ42AMHNINafCkSW3JTis5f9ul5dzc0K6Dx",
+    "action": "payInvoice",
+    "info": [
+      {
+        "web_id": "BGDRV00E1225",
+        "name": "MD ROBIUL ISLAM",
+        "phone": "01760567555",
+        "email": "SHOHAGROY@YAHOO.COM",
+        "amount": 800,
+        "is_open": true,
+        "confirm_tos": true,
+        "amountChangeData": {
+          "allow_old_amount_until_new_date": 2,
+          "max_notification_count": 0,
+          "old_visa_fees": "800.00",
+          "new_fees_applied_from": "2018-08-05 00:00:00",
+          "notice": false,
+          "notice_short": "",
+          "notice_popup": "",
+          "new_visa_fee": "800.00"
+        },
+        "otp": "365511",
+        "center": { "id": 3, "c_name": "Rajshahi", "prefix": "R" },
+        "ivac": {
+          "id": 2,
+          "center_info_id": 3,
+          "ivac_name": "IVAC , RAJSHAHI",
+          "prefix": "R",
+          "app_key": "IVACRAJSHAHI"
+        },
+        "visa_type": {
+          "id": 13,
+          "type_name": "MEDICAL/MEDICAL ATTENDANT VISA",
+          "is_active": 1
+        }
+      }
+    ],
+    "selected_payment": {
+      "name": "Bkash",
+      "slug": "bkash",
+      "grand_total": 824,
+      "link": "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/bkash.png"
+    },
+    "selected_slot": {
+      "id": 142049,
+      "ivac_id": 17,
+      "visa_type": 13,
+      "hour": 10,
+      "date": "2024-10-17",
+      "availableSlot": 1,
+      "time_display": "10:00 - 10:59"
+    },
+    "hash_params": ""
+  }
+]

@@ -2,6 +2,7 @@ import http from "http";
 import app, { allowedOrigins } from "../app";
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { applicationService } from "../modules/applications/applications.service";
+import axios from "axios";
 
 interface User {
   _id: string;
@@ -41,15 +42,32 @@ io.on("connection", (socket: Socket) => {
         io.emit("otp-get", { otp, to: phone });
       }, randomDelay);
     }
-    await applicationService.updateByPhone(phone, {
-      resend: 1,
-    });
+    // await applicationService.updateByPhone(phone, {
+    //   resend: 1,
+    // });
   });
 
   socket.on("otp-verified", async ({ phone, otp }) => {
-    await applicationService.updateByPhone(phone, {
-      otp: otp,
-    });
+    // await applicationService.updateByPhone(phone, {
+    //   otp: otp,
+    // });
+  });
+
+  socket.on("create-captcha", async (data) => {
+    io.emit("get-captcha-token", data);
+  });
+
+  socket.on("received-url", async (data) => {
+    const { url, phone } = data;
+    const captchaBody = await axios.get(url);
+
+    const htmlString = captchaBody?.data;
+
+    const tokenStart = htmlString.indexOf('value="') + 7;
+    const tokenEnd = htmlString.indexOf('"', tokenStart);
+    const token = htmlString.slice(tokenStart, tokenEnd);
+
+    io.emit("captcha-solved", { token, phone });
   });
 
   socket.on("disconnect", () => {
