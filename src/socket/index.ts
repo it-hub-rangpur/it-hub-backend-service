@@ -47,11 +47,11 @@ io.on("connection", (socket: Socket) => {
     // });
   });
 
-  socket.on("otp-verified", async ({ phone, otp }) => {
-    // await applicationService.updateByPhone(phone, {
-    //   otp: otp,
-    // });
-  });
+  // socket.on("otp-verified", async ({ phone, otp }) => {
+  //   // await applicationService.updateByPhone(phone, {
+  //   //   otp: otp,
+  //   // });
+  // });
 
   socket.on("create-captcha", async (data) => {
     io.emit("get-captcha-token", data);
@@ -59,15 +59,15 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("received-url", async (data) => {
     const { url, phone } = data;
-    const captchaBody = await axios.get(url);
 
-    const htmlString = captchaBody?.data;
-
-    const tokenStart = htmlString.indexOf('value="') + 7;
-    const tokenEnd = htmlString.indexOf('"', tokenStart);
-    const token = htmlString.slice(tokenStart, tokenEnd);
-
-    io.emit("captcha-solved", { token, phone });
+    if (url.includes("https://www.google.com/recaptcha/")) {
+      const captchaBody = await axios.get(url);
+      const htmlString = captchaBody?.data;
+      const tokenStart = htmlString.indexOf('value="') + 7;
+      const tokenEnd = htmlString.indexOf('"', tokenStart);
+      const token = htmlString.slice(tokenStart, tokenEnd);
+      io.emit("captcha-solved", { token, phone });
+    }
   });
 
   socket.on("disconnect", () => {
