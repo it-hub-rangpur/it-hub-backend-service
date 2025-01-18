@@ -2,17 +2,31 @@ import { Model, Schema } from "mongoose";
 
 export interface IApplication extends Document {
   _id?: string;
-  client: Schema.Types.ObjectId | string;
+  companyId: Schema.Types.ObjectId | string;
+  assignTo: Schema.Types.ObjectId | string;
   center: number;
   ivac: number;
   visaType: number;
-  email: string;
   phone: string;
+  email: string;
+  paymentMethod: string;
+  paymentNumber: string;
+  paymentAmount: number;
+  info: { name: string; web_id: string }[];
   otp: string;
+  slot_dates: string[];
+  slot_time: {
+    id: number;
+    ivac_id: number;
+    visa_type: number;
+    hour: number;
+    date: string;
+    availableSlot: number;
+    time_display: string;
+  }[];
   hash_params: string;
-  info: { name: string; bgdId: string }[];
-  status: boolean;
   resend: number;
+  status: boolean;
 }
 
 export interface IApplicationModel extends Model<IApplication, {}, {}> {}

@@ -8,7 +8,6 @@ const getReCaptchaToken = async () => {
     pageurl: envConfig.websiteURL,
     googlekey: envConfig.websiteKey,
   });
-
   return captchaResponse.data;
 };
 

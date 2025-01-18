@@ -10,7 +10,14 @@ const uri: string | undefined =
 async function dbConnection() {
   try {
     if (uri) {
-      await mongoose.connect(uri as string);
+      await mongoose.connect(uri as string, {
+        autoIndex: true, // Automatically build indexes
+        maxPoolSize: 10, // Maintain up to 10 socket connections
+      });
+      // await mongoose.connect(uri as string, {
+      //   useNewUrlParser: true,
+      //   useUnifiedTopology: true,
+      // });
       AppServer.listen(env.port, () => {
         console.log(`server is listening on port: ${env.port}`);
       });

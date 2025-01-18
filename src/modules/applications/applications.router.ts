@@ -4,7 +4,10 @@ import verifyedLoginUser from "../../middlewares/verifyedUser";
 
 const router = express.Router();
 
-router.route("/get-all").get(applicationController.getReadyApplications);
+// router.route("/get-all").get(applicationController.getReadyApplications);
+router
+  .route("/get-process")
+  .get(verifyedLoginUser, applicationController.getReadyApplications);
 
 router
   .route("/")

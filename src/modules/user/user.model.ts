@@ -11,7 +11,6 @@ const userSchema: Schema<IUser> = new Schema<IUser>(
       trim: true,
       unique: true,
     },
-
     name: {
       type: String,
       trim: true,
@@ -33,13 +32,20 @@ const userSchema: Schema<IUser> = new Schema<IUser>(
     phone: {
       type: String,
     },
-
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Client",
+    },
     role: {
       type: String,
-      enum: ["user", "admin", "superadmin"],
+      enum: ["admin", "superadmin", "companyuser", "companyadmin"],
       required: true,
       lowercase: true,
       default: "user",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {
@@ -50,7 +56,7 @@ const userSchema: Schema<IUser> = new Schema<IUser>(
 userSchema.statics.isUserExist = async function (username) {
   return await this.findOne(
     { username },
-    { username, name: 1, email: 1, password: 1, role: 1, phone: 1 }
+    { username, name: 1, email: 1, password: 1, role: 1, phone: 1, isActive: 1 }
   );
 };
 

@@ -1,4 +1,5 @@
 import { Model } from "mongoose";
+import { IApplication } from "../applications/applications.interface";
 
 export interface IClient extends Document {
   _id?: string;
@@ -8,20 +9,10 @@ export interface IClient extends Document {
   email?: string;
   address?: string;
   isActive?: boolean;
-  visaFiles?: string[];
+  applications?: string[] | IApplication[];
+  tokenAmount: number;
+  currentBalance: number;
+  users?: string[];
 }
 
 export interface IClientModel extends Model<IClient> {}
-
-// export interface IClientModel extends Model<IClient, {}, {}> {
-//   isUserExist(
-//     email: string
-//   ): Promise<Pick<
-//     IClient,
-//     "name" | "_id" | "password" | "email" | "phone"
-//   > | null>;
-//   isPasswordMatched(
-//     givenPassword: string,
-//     savedPassword: string
-//   ): Promise<boolean>;
-// }

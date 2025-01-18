@@ -1,11 +1,16 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Document, Model } from "mongoose";
 import { IApplication, IApplicationModel } from "./applications.interface";
 
 const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
   {
-    client: {
+    companyId: {
       type: Schema.Types.ObjectId,
       ref: "Client",
+      required: true,
+    },
+    assignTo: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     center: {
@@ -20,14 +25,26 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       type: Number,
       required: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: false,
-    },
     phone: {
       type: String,
       required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    paymentMethod: {
+      type: String,
+      required: true,
+    },
+    paymentNumber: {
+      type: String,
+      required: true,
+    },
+    paymentAmount: {
+      type: Number,
+      required: true,
+      default: 0,
     },
     info: [
       {
@@ -35,7 +52,7 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
           type: String,
           required: true,
         },
-        bgdId: {
+        web_id: {
           type: String,
           required: true,
         },
@@ -46,26 +63,32 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       maxlength: 6,
       minlength: 6,
     },
-    hash_params: {
-      type: String,
-      default: "",
+    slot_dates: {
+      type: [String],
+      default: [],
     },
-    status: {
-      type: Boolean,
-      default: false,
-    },
-    resend: {
-      type: Number,
-      default: 0,
-    },
+    slot_time: [
+      {
+        id: { type: Number, required: true, default: 0 },
+        ivac_id: { type: Number, required: true, default: 0 },
+        visa_type: { type: Number, required: true, default: 0 },
+        hour: { type: Number, required: true, default: 0 },
+        date: { type: String, required: true, default: "" },
+        availableSlot: { type: Number, required: true, default: 0 },
+        time_display: { type: String, required: true, default: "" },
+      },
+    ],
+    hash_params: { type: String, default: "" },
+    resend: { type: Number, default: 0 },
+    status: { type: Boolean, default: false },
   },
   {
-    timestamps: true,
+    timestamps: true, // Adds createdAt and updatedAt fields
   }
 );
 
 const Application = model<IApplication, IApplicationModel>(
-  "application",
+  "Application",
   applicationSchema
 );
 

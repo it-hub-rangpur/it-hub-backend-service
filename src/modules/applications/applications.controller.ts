@@ -3,10 +3,10 @@ import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { applicationService } from "./applications.service";
+import { IUser } from "../user/user.interface";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.create(req.body);
-
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -16,7 +16,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
-  const response = await applicationService.getAll();
+  const response = await applicationService.getAll(req.user as Partial<IUser>);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -46,7 +46,7 @@ const updateOne = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteOne = catchAsync(async (req: Request, res: Response) => {
-  const response = await applicationService.deleteOne(req.params.id);
+  const response = await applicationService.deleteOne(req.params.id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -56,7 +56,11 @@ const deleteOne = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getReadyApplications = catchAsync(async (req: Request, res: Response) => {
-  const response = await applicationService.getReadyApplications();
+  const user = req.user as Partial<IUser>;
+  const response = await applicationService.getReadyApplications(
+    user?._id as string
+  );
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

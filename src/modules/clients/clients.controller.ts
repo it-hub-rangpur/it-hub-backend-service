@@ -6,7 +6,8 @@ import { clientServices } from "./clients.service";
 import Client from "./clients.model";
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  const response = await Client.create(req.body);
+  // const response = await Client.create(req.body);
+  const response = await clientServices.create(req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.CREATED,

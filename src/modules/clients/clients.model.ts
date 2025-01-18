@@ -32,11 +32,22 @@ const clientSchema: Schema<IClient> = new Schema<IClient>(
       type: String,
     },
 
-    visaFiles: {
-      type: [String],
+    applications: {
+      type: [Schema.Types.ObjectId],
       default: [],
     },
-
+    users: {
+      type: [Schema.Types.ObjectId],
+      default: [],
+    },
+    currentBalance: {
+      type: Number,
+      default: 0,
+    },
+    tokenAmount: {
+      type: Number,
+      default: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,

@@ -19,7 +19,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
 const login = catchAsync(async (req: Request, res: Response) => {
   const response = await userService.login(req.body);
 
-  sendResponse<string>(res, {
+  sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "User logged in successfully!",
@@ -49,9 +49,31 @@ const auth = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateOne = catchAsync(async (req: Request, res: Response) => {
+  const response = await userService.updateOne(req.body);
+  sendResponse<IUser>(res, {
+    statusCode: 200,
+    success: true,
+    message: "User Update Successfully!",
+    data: response,
+  });
+});
+
+const deleteOne = catchAsync(async (req: Request, res: Response) => {
+  const response = await userService.deleteOne(req.body?._id);
+  sendResponse<IUser>(res, {
+    statusCode: 200,
+    success: true,
+    message: "User Delete Successfully!",
+    data: response,
+  });
+});
+
 export const userController = {
   create,
   getAll,
   login,
   auth,
+  updateOne,
+  deleteOne,
 };

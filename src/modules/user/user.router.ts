@@ -5,7 +5,12 @@ import verifyedLoginUser from "../../middlewares/verifyedUser";
 const router = express.Router();
 router.route("/login").post(userController.login);
 
-router.route("/").get(userController.getAll).post(userController.create);
+router
+  .route("/")
+  .get(userController.getAll)
+  .post(userController.create)
+  .patch(userController.updateOne)
+  .delete(userController.deleteOne);
 router.route("/me").get(verifyedLoginUser, userController.auth);
 
 export const userRouter = router;
