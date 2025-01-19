@@ -69,8 +69,17 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
-  socket.on("captcha-solved", async (token) => {
-    io.emit("captcha-verified", token);
+  socket.on("captcha-neded", (data) => {
+    console.log("captcha-neded:", data);
+    io.emit("captcha-create", data);
+  });
+
+  socket.on("container-close", (data) => {
+    io.emit("captcha-close", data);
+  });
+  socket.on("captcha-solved", (data) => {
+    console.log(data);
+    io.emit("captcha-received", data);
   });
 
   socket.on("disconnect", () => {
