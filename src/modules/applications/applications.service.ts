@@ -101,6 +101,7 @@ const getReadyApplications = async (userId: string) => {
       hash_params: item?.hash_params,
       selected_payment: paymentOptions[item?.paymentMethod],
       info,
+      createdAt: item?.createdAt,
     };
   });
   return readyData;

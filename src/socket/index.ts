@@ -42,16 +42,15 @@ io.on("connection", (socket: Socket) => {
         io.emit("otp-get", { otp, to: phone });
       }, randomDelay);
     }
-    // await applicationService.updateByPhone(phone, {
-    //   resend: 1,
-    // });
   });
 
-  // socket.on("otp-verified", async ({ phone, otp }) => {
-  //   // await applicationService.updateByPhone(phone, {
-  //   //   otp: otp,
-  //   // });
-  // });
+  socket.on("sendSlotDate", (data) => {
+    io.emit("get-dates", data);
+  });
+
+  socket.on("sendSlotTime", (data) => {
+    io.emit("get-times", data);
+  });
 
   socket.on("create-captcha", async (data) => {
     io.emit("get-captcha-token", data);

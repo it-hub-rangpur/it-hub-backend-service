@@ -27,6 +27,7 @@ export interface IApplication extends Document {
   hash_params: string;
   resend: number;
   status: boolean;
+  createdAt: string;
 }
 
 export interface IApplicationModel extends Model<IApplication, {}, {}> {}
