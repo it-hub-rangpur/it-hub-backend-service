@@ -21,6 +21,20 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const testSocket = catchAsync(async (req: Request, res: Response) => {
+  const params = req.params;
+  const query = req.query;
+  const body = req.body;
+
+  socketIo.emit("test", { body, params, query });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Messages send Successfully!",
+    data: { body, params, query },
+  });
+});
+
 const create = catchAsync(async (req: Request, res: Response) => {
   // const result = await messagesService.create(req.body);
   const params = req.params;
@@ -133,4 +147,5 @@ export const messagesController = {
   getAll,
   autoOtp,
   sendAutoOtp,
+  testSocket,
 };

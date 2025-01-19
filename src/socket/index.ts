@@ -69,6 +69,10 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
+  socket.on("captcha-solved", async (token) => {
+    io.emit("captcha-verified", token);
+  });
+
   socket.on("disconnect", () => {
     for (const userId in onlineUsers) {
       if (onlineUsers[userId].socketId === socket.id) {
