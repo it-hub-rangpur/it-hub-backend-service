@@ -35,6 +35,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("otp-send", async ({ phone, isTesting }) => {
+    io.emit("otp-received", { phone, isTesting });
     if (isTesting) {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const randomDelay = Math.floor(Math.random() * 4000) + 1000;

@@ -1,5 +1,5 @@
 const manageQueue = async () => {
-  return 200;
+  // return 200;
   const luckyNumber = Math.floor(Math.random() * 10) + 1;
   if (luckyNumber === 7) {
     return 200;
@@ -15,7 +15,7 @@ const manageQueue = async () => {
 };
 
 const getTimeSlots = async () => {
-  return 200;
+  // return 200;
   const luckyNumber = Math.floor(Math.random() * 10) + 1;
   if (luckyNumber === 7) {
     return 200;
@@ -31,7 +31,7 @@ const getTimeSlots = async () => {
 };
 
 const payInvoice = async () => {
-  return 200;
+  // return 200;
   const luckyNumber = Math.floor(Math.random() * 10) + 1;
   if (luckyNumber === 7) {
     return 200;
