@@ -11,7 +11,6 @@ const verifyedLoginUser: RequestHandler = async (req, res, next) => {
     if (!token) {
       throw new ApiError(httpStatus.NOT_FOUND, "User Not Login");
     }
-
     const decoded = await promisify(jwt.verify)(token, envConfig.secretKey);
     req.user = decoded;
     next();

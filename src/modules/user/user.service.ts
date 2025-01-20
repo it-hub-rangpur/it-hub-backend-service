@@ -53,7 +53,10 @@ const login = async (payload: IUser) => {
   }
 
   const token = await generateToken(isUserExist);
-  return token;
+  return {
+    token,
+    _id: isUserExist._id,
+  };
 };
 
 const getAll = async () => {
