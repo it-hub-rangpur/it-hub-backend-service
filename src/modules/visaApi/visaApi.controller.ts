@@ -34,7 +34,7 @@ const manageQueue = catchAsync(async (req: Request, res: Response) => {
     if (req?.body?.action === "sendOtp") {
       res.status(502).json({ message: "Bad Gateway" });
     } else {
-      res.status(200).json(getVerifySuccessDateNull);
+      res.status(200).json(getVerifySuccessResponse);
     }
   } else {
     res.status(504).json({ message: "Gateway Timeout" });
