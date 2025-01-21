@@ -1,6 +1,4 @@
 const manageQueue = async () => {
-  console.log("call");
-  return 200;
   const luckyNumber = Math.floor(Math.random() * 10) + 1;
   if (luckyNumber === 7) {
     return 200;

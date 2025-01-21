@@ -71,7 +71,6 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("captcha-neded", (data) => {
-    console.log("captcha-neded:", data);
     io.emit("captcha-create", data);
   });
 
@@ -79,7 +78,6 @@ io.on("connection", (socket: Socket) => {
     io.emit("captcha-close", data);
   });
   socket.on("captcha-solved", (data) => {
-    console.log(data);
     io.emit("captcha-received", data);
   });
 

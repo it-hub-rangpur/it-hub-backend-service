@@ -14,8 +14,7 @@ import {
 
 const manageQueue = catchAsync(async (req: Request, res: Response) => {
   const result = await visaApiService.manageQueue();
-  // await new Promise((resolve) => setTimeout(resolve, 10000));
-  // res.status(200).json(getVerifySuccessResponse);
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   if (result === 200) {
     if (req?.body?.action === "sendOtp") {
