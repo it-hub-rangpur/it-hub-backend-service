@@ -3,10 +3,8 @@ import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { clientServices } from "./clients.service";
-import Client from "./clients.model";
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  // const response = await Client.create(req.body);
   const response = await clientServices.create(req.body);
 
   sendResponse(res, {

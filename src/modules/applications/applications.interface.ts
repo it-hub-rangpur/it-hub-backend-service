@@ -27,6 +27,12 @@ export interface IApplication extends Document {
   hash_params: string;
   resend: number;
   status: boolean;
+  paymentStatus: {
+    status: string;
+    url: string;
+    order_id: string;
+    token_no: string;
+  };
   createdAt: string;
 }
 

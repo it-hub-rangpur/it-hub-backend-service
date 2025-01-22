@@ -45,6 +45,20 @@ const updateOne = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateByPhone = catchAsync(async (req: Request, res: Response) => {
+  const response = await applicationService.updateByPhone(
+    req.params.phone,
+    req.body
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Application Update Successfully!",
+    data: response,
+  });
+});
+
 const deleteOne = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.deleteOne(req.params.id, req.body);
   sendResponse(res, {
@@ -75,5 +89,6 @@ export const applicationController = {
   getOne,
   updateOne,
   deleteOne,
+  updateByPhone,
   getReadyApplications,
 };

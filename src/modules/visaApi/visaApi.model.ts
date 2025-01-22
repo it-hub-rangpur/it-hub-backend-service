@@ -95,7 +95,7 @@ export const getTimesSlotsErrorResponse = {
 
 export const getPaymentUrlSuccessResponse = {
   status: "OK",
-  data: {
-    url: "https://www.example.payment-link.com/",
-  },
+  url: "https://securepay.sslcommerz.com/gwprocess/v4/gw.php?Q=REDIRECT&SESSIONKEY=29A6DB7914F4B36DA6893D93EE24F6EC&cardname=",
+  order_id: "SBIMU1737554426283",
+  token_no: "T2U6790F9FACCEF079146",
 };

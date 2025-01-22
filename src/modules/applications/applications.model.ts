@@ -81,6 +81,12 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
     hash_params: { type: String, default: "" },
     resend: { type: Number, default: 0 },
     status: { type: Boolean, default: false },
+    paymentStatus: {
+      status: { type: String, default: "" },
+      url: { type: String, default: "" },
+      order_id: { type: String, default: "" },
+      token_no: { type: String, default: "" },
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

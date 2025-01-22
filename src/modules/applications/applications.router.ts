@@ -20,4 +20,8 @@ router
   .delete(verifyedLoginUser, applicationController.deleteOne)
   .get(verifyedLoginUser, applicationController.getOne);
 
+router
+  .route("/payment-status/:phone")
+  .patch(verifyedLoginUser, applicationController.updateByPhone);
+
 export const applicationRouter = router;
