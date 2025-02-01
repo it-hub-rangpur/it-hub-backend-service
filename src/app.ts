@@ -50,6 +50,7 @@
 // });
 
 // export default app;
+
 import express, { Request, Response } from "express";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -72,7 +73,9 @@ const getClientIP = (req: Request): string => {
 const getForwardedHeaders = (
   req: Request
 ): { [key: string]: string | undefined } => {
-  const headers: { [key: string]: string | undefined } = { ...req.headers };
+  const headers: { [key: string]: string | string[] | undefined } = {
+    ...req.headers,
+  };
 
   // Remove headers that should not be forwarded or handled manually
   delete headers["host"];
@@ -109,7 +112,17 @@ const getForwardedHeaders = (
   headers["Accept-Encoding"] = "gzip, deflate, br";
   headers["DNT"] = "1";
 
-  return headers;
+  // Ensuring all headers are string values
+  const stringHeaders: { [key: string]: string | undefined } = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (Array.isArray(value)) {
+      stringHeaders[key] = value.join(", "); // Join array values into a comma-separated string
+    } else {
+      stringHeaders[key] = value as string; // Cast value to string
+    }
+  }
+
+  return stringHeaders;
 };
 
 app.use(async (req: Request, res: Response) => {
