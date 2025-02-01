@@ -89,6 +89,7 @@ const getReadyApplications = async (userId: string) => {
         visa_type: visaTypes[item?.visaType],
         amountChangeData,
         confirm_tos: true,
+        paymentMethod: item?.paymentMethod,
       };
     });
 
