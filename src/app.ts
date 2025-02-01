@@ -7,14 +7,14 @@
 
 // const app = express();
 
-// export const allowedOrigins = [
-//   "https://payment.ivacbd.com",
-//   "https://it-hub.programmerhub.xyz",
-//   "https://it-hub-client-service.vercel.app",
-//   "http://localhost:3000",
-//   "http://localhost:5000",
-//   "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5000--1b4252dd.local-credentialless.webcontainer-api.io/",
-// ];
+export const allowedOrigins = [
+  "https://payment.ivacbd.com",
+  "https://it-hub.programmerhub.xyz",
+  "https://it-hub-client-service.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5000--1b4252dd.local-credentialless.webcontainer-api.io/",
+];
 
 // app.use(
 //   cors({
@@ -165,3 +165,5 @@ app.use(async (req: Request, res: Response) => {
 
 const PORT = process.env.PORT || 9000;
 app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
+
+export default app;
