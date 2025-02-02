@@ -42,8 +42,6 @@ export interface IAmountChangeData {
   old_visa_fees: string;
   new_fees_applied_from: string;
   notice: boolean;
-  notice_short: string;
-  notice_popup: string;
   new_visa_fee: string;
 }
 
@@ -520,7 +518,5 @@ export const amountChangeData: IAmountChangeData = {
   old_visa_fees: "800.00",
   new_fees_applied_from: "2018-08-05 00:00:00",
   notice: false,
-  notice_short: "",
-  notice_popup: "",
   new_visa_fee: "800.00",
 };

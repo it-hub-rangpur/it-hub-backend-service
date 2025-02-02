@@ -11,6 +11,7 @@ import Client from "../clients/clients.model";
 import { IApplication } from "./applications.interface";
 import Application from "./applications.model";
 import { IUser } from "../user/user.interface";
+import generateNextDay from "../../utils/generateNextDay";
 
 const create = async (payload: IApplication) => {
   const company = await Client.findById(payload.companyId);
@@ -103,6 +104,9 @@ const getReadyApplications = async (userId: string) => {
       selected_payment: paymentOptions[item?.paymentMethod],
       info,
       createdAt: item?.createdAt,
+      slot_dates: item?.slot_dates?.length
+        ? item?.slot_dates
+        : [generateNextDay()],
     };
   });
   return readyData;

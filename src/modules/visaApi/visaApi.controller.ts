@@ -13,38 +13,38 @@ import {
 } from "./visaApi.model";
 
 const manageQueue = catchAsync(async (req: Request, res: Response) => {
-  await visaApiService.apiManageQueue(req, res);
-  // const result = await visaApiService.manageQueue();
-  // // await new Promise((resolve) => setTimeout(resolve, 50000));
-  // if (result === 200) {
-  //   if (req?.body?.action === "sendOtp") {
-  //     res.status(200).json(sendOtpSuccess);
-  //   } else {
-  //     res.status(200).json(getVerifySuccessResponse);
-  //   }
-  // } else if (result === 422) {
-  //   if (req?.body?.action === "sendOtp") {
-  //     res.status(200).json(slotNotAvailable);
-  //   } else {
-  //     res.status(200).json(getVerifyErrorResponse);
-  //   }
-  // } else if (result === 502) {
-  //   res.status(502).json({ message: "Bad Gateway" });
-  // } else if (result === 500) {
-  //   if (req?.body?.action === "sendOtp") {
-  //     res.status(502).json({ message: "Bad Gateway" });
-  //   } else {
-  //     res.status(200).json(getVerifySuccessResponse);
-  //   }
-  // } else {
-  //   res.status(504).json({ message: "Gateway Timeout" });
-  // }
+  // await visaApiService.apiManageQueue(req, res);
+  const result = await visaApiService.manageQueue();
+  // await new Promise((resolve) => setTimeout(resolve, 50000));
+  if (result === 200) {
+    if (req?.body?.action === "sendOtp") {
+      res.status(200).json(sendOtpSuccess);
+    } else {
+      res.status(200).json(getVerifySuccessResponse);
+    }
+  } else if (result === 422) {
+    if (req?.body?.action === "sendOtp") {
+      res.status(200).json(slotNotAvailable);
+    } else {
+      res.status(200).json(getVerifyErrorResponse);
+    }
+  } else if (result === 502) {
+    res.status(502).json({ message: "Bad Gateway" });
+  } else if (result === 500) {
+    if (req?.body?.action === "sendOtp") {
+      res.status(502).json({ message: "Bad Gateway" });
+    } else {
+      res.status(200).json(getVerifySuccessResponse);
+    }
+  } else {
+    res.status(504).json({ message: "Gateway Timeout" });
+  }
 });
 
 const getTimeSlots = catchAsync(async (req: Request, res: Response) => {
   const result = await visaApiService.getTimeSlots();
   // await new Promise((resolve) => setTimeout(resolve, 500));
-  res.status(200).json(getTimesSlotsErrorResponse);
+  // res.status(200).json(getTimesSlotsErrorResponse);
 
   if (result === 200) {
     res.status(200).json(getTimesSlotsSuccessResponse);
@@ -59,7 +59,7 @@ const getTimeSlots = catchAsync(async (req: Request, res: Response) => {
 
 const payInvoice = catchAsync(async (req: Request, res: Response) => {
   const result = await visaApiService.payInvoice();
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // await new Promise((resolve) => setTimeout(resolve, 5000));
   // res.status(200).json(getVerifySuccessResponse);
 
   if (result === 200) {

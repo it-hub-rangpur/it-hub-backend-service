@@ -24,4 +24,6 @@ router
   .route("/payment-status/:phone")
   .patch(verifyedLoginUser, applicationController.updateByPhone);
 
+router.route("/set-slot-times").post(applicationController.setSlotDates);
+
 export const applicationRouter = router;

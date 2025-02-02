@@ -4,6 +4,7 @@ import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { applicationService } from "./applications.service";
 import { IUser } from "../user/user.interface";
+import { socketIo } from "../../socket";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.create(req.body);
@@ -83,6 +84,16 @@ const getReadyApplications = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const setSlotDates = catchAsync(async (req: Request, res: Response) => {
+  socketIo.emit("get-times", req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Slot Times set successfully",
+  });
+});
+
 export const applicationController = {
   create,
   getAll,
@@ -91,4 +102,5 @@ export const applicationController = {
   deleteOne,
   updateByPhone,
   getReadyApplications,
+  setSlotDates,
 };
