@@ -72,6 +72,7 @@ const deleteOne = catchAsync(async (req: Request, res: Response) => {
 
 const getReadyApplications = catchAsync(async (req: Request, res: Response) => {
   const user = req.user as Partial<IUser>;
+
   const response = await applicationService.getReadyApplications(
     user?._id as string
   );

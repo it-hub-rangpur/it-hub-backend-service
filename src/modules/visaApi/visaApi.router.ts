@@ -6,4 +6,6 @@ router.route("/queue-manage").post(visaApiController.manageQueue);
 router.route("/get_payment_options_v2").post(visaApiController.getTimeSlots);
 router.route("/slot_pay_now").post(visaApiController.payInvoice);
 
+router.route("/mobile-verify").post(visaApiController.mobileVerify);
+
 export const visaApiRouter = router;

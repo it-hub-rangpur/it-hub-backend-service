@@ -76,33 +76,20 @@ const getReadyApplications = async (userId: string) => {
   const result = await Application.find({ assignTo: userId, status: false });
 
   const readyData = result.map((item) => {
-    const info = item?.info?.map((data) => {
-      return {
-        web_id: data?.web_id,
-        web_id_repeat: data?.web_id,
-        name: data?.name,
-        phone: item?.phone,
-        otp: item?.otp,
-        email: item?.email,
-        amount: 800.0,
-        center: centers[item?.center],
-        ivac: ivacs[item?.ivac],
-        visa_type: visaTypes[item?.visaType],
-        amountChangeData,
-        confirm_tos: true,
-        paymentMethod: item?.paymentMethod,
-      };
-    });
-
     return {
+      _id: item?._id,
       _token: "",
-      apiKey: "",
-      action: "sendOtp",
       resend: 0,
+      center: item?.center,
+      ivac: item?.ivac,
+      visaType: item?.visaType,
+      phone: item?.phone,
+      password: item?.password,
+      info: item?.info,
       otp: item?.otp,
+      visit_purpose: item?.visit_purpose,
       hash_params: item?.hash_params,
       selected_payment: paymentOptions[item?.paymentMethod],
-      info,
       createdAt: item?.createdAt,
       slot_dates: item?.slot_dates?.length
         ? item?.slot_dates

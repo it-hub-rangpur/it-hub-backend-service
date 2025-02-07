@@ -29,7 +29,7 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       type: String,
       required: true,
     },
-    email: {
+    password: {
       type: String,
       required: true,
     },
@@ -37,7 +37,7 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       type: String,
       required: true,
     },
-    paymentNumber: {
+    visit_purpose: {
       type: String,
       required: true,
     },

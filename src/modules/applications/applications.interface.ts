@@ -8,9 +8,9 @@ export interface IApplication extends Document {
   ivac: number;
   visaType: number;
   phone: string;
-  email: string;
+  password: string;
   paymentMethod: string;
-  paymentNumber: string;
+  visit_purpose: string;
   paymentAmount: number;
   info: { name: string; web_id: string }[];
   otp: string;
