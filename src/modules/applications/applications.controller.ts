@@ -95,6 +95,20 @@ const setSlotDates = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getProcessApplications = catchAsync(
+  async (req: Request, res: Response) => {
+    const response = await applicationService.getProcessApplicationById(
+      req.params.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Application Get Successfully!",
+      data: response,
+    });
+  }
+);
+
 export const applicationController = {
   create,
   getAll,
@@ -104,4 +118,5 @@ export const applicationController = {
   updateByPhone,
   getReadyApplications,
   setSlotDates,
+  getProcessApplications,
 };

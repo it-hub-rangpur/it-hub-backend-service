@@ -33,6 +33,10 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       type: String,
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+    },
     paymentMethod: {
       type: String,
       required: true,

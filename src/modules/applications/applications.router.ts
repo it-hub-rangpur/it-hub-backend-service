@@ -10,6 +10,10 @@ router
   .get(verifyedLoginUser, applicationController.getReadyApplications);
 
 router
+  .route("/get-process/:id")
+  .get(applicationController.getProcessApplications);
+
+router
   .route("/")
   .get(verifyedLoginUser, applicationController.getAll)
   .post(verifyedLoginUser, applicationController.create);

@@ -1,11 +1,5 @@
 import httpStatus from "http-status";
-import {
-  amountChangeData,
-  centers,
-  ivacs,
-  paymentOptions,
-  visaTypes,
-} from "../../Constants/ApplicationsContans";
+import { paymentOptions } from "../../Constants/ApplicationsContans";
 import ApiError from "../../errorHandelars/ApiError";
 import Client from "../clients/clients.model";
 import { IApplication } from "./applications.interface";
@@ -99,6 +93,30 @@ const getReadyApplications = async (userId: string) => {
   return readyData;
 };
 
+const getProcessApplicationById = async (id: string) => {
+  const result = await Application.findById(id);
+  return {
+    _id: result?._id,
+    _token: "",
+    resend: 0,
+    center: result?.center,
+    ivac: result?.ivac,
+    visaType: result?.visaType,
+    phone: result?.phone,
+    email: result?.email,
+    password: result?.password,
+    info: result?.info,
+    otp: result?.otp,
+    visit_purpose: result?.visit_purpose,
+    hash_params: result?.hash_params,
+    selected_payment: paymentOptions[result?.paymentMethod as string],
+    createdAt: result?.createdAt,
+    slot_dates: result?.slot_dates?.length
+      ? result?.slot_dates
+      : [generateNextDay()],
+  };
+};
+
 export const applicationService = {
   create,
   getAll,
@@ -107,4 +125,5 @@ export const applicationService = {
   deleteOne,
   getReadyApplications,
   updateByPhone,
+  getProcessApplicationById,
 };
