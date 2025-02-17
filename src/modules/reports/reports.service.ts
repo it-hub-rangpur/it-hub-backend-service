@@ -32,7 +32,6 @@ const getAvailableDatetime = async () => {
     await page.goto("https://payment.ivacbd.com/", {
       waitUntil: "domcontentloaded",
     });
-
     // Simulate human-like interactions
     await page.mouse.move(100, 100);
     await page.mouse.move(200, 300);

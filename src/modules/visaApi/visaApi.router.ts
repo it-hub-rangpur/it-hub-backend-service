@@ -10,5 +10,6 @@ router.route("/mobile-verify").post(visaApiController.mobileVerify);
 router.route("/pay-otp-sent").post(visaApiController.sendOtp);
 router.route("/pay-otp-verify").post(visaApiController.verifyOtp);
 router.route("/pay-slot-time").post(visaApiController.payTimeSlots);
+router.route("/paynow").post(visaApiController.slotPayNow);
 
 export const visaApiRouter = router;

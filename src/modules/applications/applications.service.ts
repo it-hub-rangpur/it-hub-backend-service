@@ -114,6 +114,7 @@ const getProcessApplicationById = async (id: string) => {
     slot_dates: result?.slot_dates?.length
       ? result?.slot_dates
       : [generateNextDay()],
+    paymentStatus: result?.paymentStatus,
   };
 };
 

@@ -83,9 +83,14 @@ const mobileVerify = catchAsync(async (req: Request, res: Response) => {
 
 const sendOtp = catchAsync(async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
+  // res.status(200).json({
+  //   success: true,
+  //   message: "Sms send successfully",
+  // });
+
   res.status(200).json({
-    success: true,
-    message: "Sms send successfully",
+    success: false,
+    message: "Slot is not available",
   });
 });
 
@@ -131,6 +136,20 @@ const payTimeSlots = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const slotPayNow = catchAsync(async (req: Request, res: Response) => {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  res.status(200).json({
+    success: true,
+    message: "Slot booking initiated",
+    url: "https://securepay.sslcommerz.com/gwprocess/v4/gw.php?Q=REDIRECT&SESSIONKEY=43828262A4B047AF73176050C1D9163B&cardname=",
+  });
+
+  // res.status(500).json({
+  //   success: false,
+  //   message: "Slot is not available",
+  // });
+});
+
 export const visaApiController = {
   manageQueue,
   getTimeSlots,
@@ -139,4 +158,5 @@ export const visaApiController = {
   sendOtp,
   verifyOtp,
   payTimeSlots,
+  slotPayNow,
 };

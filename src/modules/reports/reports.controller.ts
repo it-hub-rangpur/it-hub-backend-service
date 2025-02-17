@@ -24,7 +24,13 @@ const testServer = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const testRedirectURL = catchAsync(async (req: Request, res: Response) => {
+  res.header("Access-Control-Expose-Headers", "Location");
+  res.status(302).redirect("https://google.com");
+});
+
 export const reportsController = {
   getAvailableDatetime,
   testServer,
+  testRedirectURL,
 };
