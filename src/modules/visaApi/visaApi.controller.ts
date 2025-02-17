@@ -11,6 +11,7 @@ import {
   sendOtpSuccess,
   slotNotAvailable,
 } from "./visaApi.model";
+import generateNextDay from "../../utils/generateNextDay";
 
 const manageQueue = catchAsync(async (req: Request, res: Response) => {
   // await visaApiService.apiManageQueue(req, res);
@@ -80,9 +81,62 @@ const mobileVerify = catchAsync(async (req: Request, res: Response) => {
   res.status(302).redirect("/verfiy");
 });
 
+const sendOtp = catchAsync(async (req: Request, res: Response) => {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  res.status(200).json({
+    success: true,
+    message: "Sms send successfully",
+  });
+});
+
+const verifyOtp = catchAsync(async (req: Request, res: Response) => {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  res.status(200).json({
+    success: true,
+    message: "",
+    data: {
+      slot_times: [],
+      slot_dates: [generateNextDay()],
+      status: true,
+      error_reason: "",
+    },
+  });
+});
+
+const payTimeSlots = catchAsync(async (req: Request, res: Response) => {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  res.status(200).json({
+    success: true,
+    message: "",
+    data: {
+      success: true,
+      message: "Slot found",
+      data: {
+        status: "OK",
+        data: [""],
+        slot_dates: [generateNextDay()],
+        slot_times: [
+          {
+            id: 180004,
+            ivac_id: 2,
+            visa_type: 18,
+            hour: 10,
+            date: generateNextDay(),
+            availableSlot: 0,
+            time_display: "10:00 - 10:59",
+          },
+        ],
+      },
+    },
+  });
+});
+
 export const visaApiController = {
   manageQueue,
   getTimeSlots,
   payInvoice,
   mobileVerify,
+  sendOtp,
+  verifyOtp,
+  payTimeSlots,
 };

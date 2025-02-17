@@ -48,7 +48,6 @@ export interface IAmountChangeData {
 export interface IPaymentOption {
   name: string;
   slug: string;
-  grand_total: number;
   link: string;
 }
 
@@ -477,37 +476,31 @@ export const paymentOptions: { [key: string]: IPaymentOption } = {
   dbblmobilebanking: {
     name: "DBBL MOBILE BANKING",
     slug: "dbblmobilebanking",
-    grand_total: 10.2912621,
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/dbblmobilebank.png",
   },
   bkash: {
     name: "Bkash",
     slug: "bkash",
-    grand_total: 10.2912621,
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/bkash.png",
   },
   mycash: {
     name: "MYCASH",
     slug: "mycash",
-    grand_total: 10.2912621,
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/mycash.png",
   },
   nagad: {
     name: "Nagad",
     slug: "nagad",
-    grand_total: 10.2912621,
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/nagad.png",
   },
   mobilemoney: {
     name: "Mobile Money",
     slug: "mobilemoney",
-    grand_total: 10.2912621,
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/mobilemoney.png",
   },
   okwallet: {
     name: "Okwallet",
     slug: "okwallet",
-    grand_total: 10.2912621,
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/okwallet.png",
   },
 };

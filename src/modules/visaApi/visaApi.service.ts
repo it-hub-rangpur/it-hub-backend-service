@@ -181,6 +181,8 @@ const payInvoice = async () => {
   }
 };
 
+const sendOtp = () => {};
+
 export const visaApiService = {
   manageQueue,
   getTimeSlots,
