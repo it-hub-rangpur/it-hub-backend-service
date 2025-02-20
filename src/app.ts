@@ -13,7 +13,7 @@ export const allowedOrigins = [
   "https://it-hub-client-service.vercel.app",
   "http://localhost:3000",
   "http://localhost:5000",
-  "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5000--1b4252dd.local-credentialless.webcontainer-api.io/",
+  "https://vps-it-hub.pkshohag240.workers.dev",
 ];
 
 app.use(

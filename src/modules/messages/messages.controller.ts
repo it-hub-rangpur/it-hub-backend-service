@@ -50,18 +50,35 @@ const create = catchAsync(async (req: Request, res: Response) => {
 
 const autoOtp = catchAsync(async (req: Request, res: Response) => {
   const body = req.query.msg as IMessage["data"];
-  const result = await messagesService.create(body);
+  // const result = await messagesService.create(body);
+
+  console.log("call");
+  const payload = {
+    time: "01/11, 11:12 PM",
+    key: "From : +8801708404440, \nTo: ,\nBody: 786567 is your one time password for verification",
+  };
+
+  const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
+  const payOtpregex = /(\d{6})\s.*(password for verification)/i;
+
+  const loginMatch = payload.key.match(loginOtpregex);
+  const payMatch = payload.key.match(payOtpregex);
+
+  if (loginMatch) {
+    console.log("This is a login OTP.");
+    console.log(`Code: ${loginMatch[1]}`);
+  } else if (payMatch) {
+    console.log("This is a payment OTP.");
+    console.log(`Code: ${payMatch[1]}`);
+  } else {
+    console.log("No valid OTP found.");
+  }
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Messages Created Successfully!",
   });
-
-  // const payload = {
-  // time: "01/11, 11:12 PM",
-  // key: "From : +8801708404440, \nTo: ,\nBody: 786567 is your one time password for verification",
-  // };
 
   // const payload = req.body;
   // const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
