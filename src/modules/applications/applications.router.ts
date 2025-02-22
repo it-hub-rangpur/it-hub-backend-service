@@ -14,9 +14,21 @@ router
   .get(applicationController.getProcessApplications);
 
 router
+  .route("/status/:id")
+  .patch(verifyedLoginUser, applicationController.updateApplicatonComplete);
+
+router
+  .route("/move-to-ongoing/:id")
+  .patch(verifyedLoginUser, applicationController.moveToOngoing);
+
+router
   .route("/")
   .get(verifyedLoginUser, applicationController.getAll)
   .post(verifyedLoginUser, applicationController.create);
+
+router
+  .route("/get-all-by-admin")
+  .get(verifyedLoginUser, applicationController.getAllByAdmin);
 
 router
   .route("/:id")

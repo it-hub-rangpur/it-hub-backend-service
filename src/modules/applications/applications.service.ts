@@ -28,7 +28,17 @@ const create = async (payload: IApplication) => {
 };
 
 const getAll = async (user: Partial<IUser>) => {
-  const result = await Application.find()
+  const result = await Application.find({
+    assignTo: user._id,
+  })
+    .sort({ createdAt: -1 })
+    .populate("companyId")
+    .populate("assignTo");
+  return result;
+};
+
+const getAllByAdmin = async (user: Partial<IUser>) => {
+  const result = await Application.find({})
     .sort({ createdAt: -1 })
     .populate("companyId")
     .populate("assignTo");
@@ -120,6 +130,36 @@ const getProcessApplicationById = async (id: string) => {
   };
 };
 
+const applicationComplete = async (id: string) => {
+  const result = await Application.findByIdAndUpdate(
+    {
+      _id: id,
+    },
+    { status: true },
+    { new: true }
+  );
+
+  return result;
+};
+
+const moveToOngoing = async (id: string) => {
+  const result = await Application.findByIdAndUpdate(
+    {
+      _id: id,
+    },
+    {
+      status: false,
+      paymentStatus: {
+        status: "",
+        url: "",
+      },
+    },
+    { new: true }
+  );
+
+  return result;
+};
+
 export const applicationService = {
   create,
   getAll,
@@ -129,4 +169,7 @@ export const applicationService = {
   getReadyApplications,
   updateByPhone,
   getProcessApplicationById,
+  applicationComplete,
+  moveToOngoing,
+  getAllByAdmin,
 };

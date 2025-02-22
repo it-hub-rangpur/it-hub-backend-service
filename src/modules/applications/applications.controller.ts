@@ -26,6 +26,18 @@ const getAll = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllByAdmin = catchAsync(async (req: Request, res: Response) => {
+  const response = await applicationService.getAllByAdmin(
+    req.user as Partial<IUser>
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Applications Get Successfully!",
+    data: response,
+  });
+});
+
 const getOne = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.getOne(req.params.id);
   sendResponse(res, {
@@ -109,6 +121,30 @@ const getProcessApplications = catchAsync(
   }
 );
 
+const updateApplicatonComplete = catchAsync(
+  async (req: Request, res: Response) => {
+    const response = await applicationService.applicationComplete(
+      req.params.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Application Update Successfully!",
+      data: response,
+    });
+  }
+);
+
+const moveToOngoing = catchAsync(async (req: Request, res: Response) => {
+  const response = await applicationService.moveToOngoing(req.params.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Application Moved Successfully!",
+    data: response,
+  });
+});
+
 export const applicationController = {
   create,
   getAll,
@@ -119,4 +155,7 @@ export const applicationController = {
   getReadyApplications,
   setSlotDates,
   getProcessApplications,
+  updateApplicatonComplete,
+  moveToOngoing,
+  getAllByAdmin,
 };
