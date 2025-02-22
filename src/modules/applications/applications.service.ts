@@ -28,9 +28,10 @@ const create = async (payload: IApplication) => {
 };
 
 const getAll = async (user: Partial<IUser>) => {
-  const result = await Application.find({
-    assignTo: user._id,
-  }).sort({ createdAt: -1 });
+  const result = await Application.find()
+    .sort({ createdAt: -1 })
+    .populate("companyId")
+    .populate("assignTo");
   return result;
 };
 
@@ -115,6 +116,7 @@ const getProcessApplicationById = async (id: string) => {
       ? result?.slot_dates
       : [generateNextDay()],
     paymentStatus: result?.paymentStatus,
+    status: result?.status,
   };
 };
 
