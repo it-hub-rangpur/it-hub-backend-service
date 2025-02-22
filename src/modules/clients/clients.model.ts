@@ -52,6 +52,10 @@ const clientSchema: Schema<IClient> = new Schema<IClient>(
       type: Boolean,
       default: true,
     },
+    transactions: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

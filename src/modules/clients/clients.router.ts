@@ -10,6 +10,10 @@ router
   .post(verifyedLoginUser, clientController.create);
 
 router
+  .route("/payment")
+  .post(verifyedLoginUser, clientController.clientPayment);
+
+router
   .route("/:id")
   .patch(verifyedLoginUser, clientController.updateById)
   .delete(verifyedLoginUser, clientController.deleteById);

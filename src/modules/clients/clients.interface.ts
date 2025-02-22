@@ -13,6 +13,7 @@ export interface IClient extends Document {
   tokenAmount: number;
   currentBalance: number;
   users?: string[];
+  transactions?: string[];
 }
 
 export interface IClientModel extends Model<IClient> {}

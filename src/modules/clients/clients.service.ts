@@ -26,10 +26,18 @@ const deleteById = async (id: string) => {
   return result;
 };
 
+const clientPayment = async (data: any) => {
+  // const result = await Client.findByIdAndDelete(id);
+  // return result;
+
+  return null;
+};
+
 export const clientServices = {
   create,
   getAll,
   getOne,
   updateById,
   deleteById,
+  clientPayment,
 };

@@ -6,6 +6,8 @@ import { IApplication } from "./applications.interface";
 import Application from "./applications.model";
 import { IUser } from "../user/user.interface";
 import generateNextDay from "../../utils/generateNextDay";
+import { transactionServices } from "../transaction/transaction.service";
+import { ITransction } from "../transaction/transaction.interface";
 
 const create = async (payload: IApplication) => {
   const company = await Client.findById(payload.companyId);
@@ -139,6 +141,20 @@ const applicationComplete = async (id: string) => {
     { new: true }
   );
 
+  const payload = {
+    company: result?.companyId,
+    type: "invoice",
+    files: result?.info?.length,
+    amount: result?.paymentAmount,
+    discount: 0,
+    payAmount: result?.paymentAmount,
+    paymentBy: result?.assignTo,
+    comment: "",
+  };
+
+  if (result?._id) {
+    await transactionServices.clientInvoice(payload as ITransction);
+  }
   return result;
 };
 

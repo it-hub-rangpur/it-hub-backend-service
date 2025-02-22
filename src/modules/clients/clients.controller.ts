@@ -45,9 +45,20 @@ const deleteById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const clientPayment = catchAsync(async (req: Request, res: Response) => {
+  const response = await clientServices.clientPayment(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Payment Created Successfully!",
+    data: response,
+  });
+});
+
 export const clientController = {
   create,
   getAll,
   updateById,
   deleteById,
+  clientPayment,
 };

@@ -7,6 +7,7 @@ import { reportsRouter } from "../modules/reports/reports.router";
 import { applicationRouter } from "../modules/applications/applications.router";
 import { visaApiRouter } from "../modules/visaApi/visaApi.router";
 import { vpsRouter } from "../modules/vps/vps.router";
+import { transactionRouter } from "../modules/transaction/transaction.router";
 const router = express.Router();
 
 const moduleRoutes = [
@@ -41,6 +42,10 @@ const moduleRoutes = [
   {
     path: "/vps",
     route: vpsRouter,
+  },
+  {
+    path: "/transactions",
+    route: transactionRouter,
   },
 ];
 
