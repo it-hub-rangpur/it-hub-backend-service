@@ -4,7 +4,7 @@ import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { messagesService } from "./messages.service";
 import { socketIo } from "../../socket";
-import { IMessage } from "./messages.model";
+import Message, { IMessage } from "./messages.model";
 
 const sendMessage = catchAsync(async (req: Request, res: Response) => {
   const params = req.params;
@@ -36,7 +36,7 @@ const testSocket = catchAsync(async (req: Request, res: Response) => {
 });
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  // const result = await messagesService.create(req.body);
+  const result = await messagesService.create(req.body);
   const params = req.params;
   const query = req.query;
 
@@ -51,18 +51,17 @@ const create = catchAsync(async (req: Request, res: Response) => {
 const autoOtp = catchAsync(async (req: Request, res: Response) => {
   const body = req.query.msg as IMessage["data"];
   // const result = await messagesService.create(body);
-
-  console.log("call");
-  const payload = {
-    time: "01/11, 11:12 PM",
-    key: "From : +8801708404440, \nTo: ,\nBody: 786567 is your one time password for verification",
-  };
+  await messagesService.create(body);
+  // const payload = {
+  //   time: "01/11, 11:12 PM",
+  //   key: "From : +8801708404440, \nTo: ,\nBody: 786567 is your one time password for verification",
+  // };
 
   const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
   const payOtpregex = /(\d{6})\s.*(password for verification)/i;
 
-  const loginMatch = payload.key.match(loginOtpregex);
-  const payMatch = payload.key.match(payOtpregex);
+  const loginMatch = body.key.match(loginOtpregex);
+  const payMatch = body.key.match(payOtpregex);
 
   if (loginMatch) {
     console.log("This is a login OTP.");
@@ -113,14 +112,30 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
   const form = message?.split("\n")[0];
   const body = message?.split("\n")[1];
 
-  const OTP = body
-    ?.split("is your one time password for verification")[0]
-    ?.trim();
+  await messagesService.create(req?.body);
 
-  socketIo.emit("send-otp", { OTP, form, phone });
-  if (OTP?.length === 6) {
-    socketIo.emit("otp-get", { to: phone, otp: OTP });
+  const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
+  const payOtpregex = /(\d{6})\s.*(password for verification)/i;
+
+  const loginMatch = body.match(loginOtpregex);
+  const payMatch = body.match(payOtpregex);
+
+  if (loginMatch) {
+    const otp = loginMatch[1];
+    socketIo.emit("login-send-otp", { otp, form, phone });
+    if (otp?.length === 6) {
+      socketIo.emit("login-otp-get", { to: phone, otp: otp });
+    }
+  } else if (payMatch) {
+    const otp = payMatch[1];
+    socketIo.emit("pay-send-otp", { otp, form, phone });
+    if (otp?.length === 6) {
+      socketIo.emit("pay-otp-get", { to: phone, otp: otp });
+    }
+  } else {
+    console.log("No valid OTP found.");
   }
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
