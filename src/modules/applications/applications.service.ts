@@ -8,6 +8,7 @@ import { IUser } from "../user/user.interface";
 import generateNextDay from "../../utils/generateNextDay";
 import { transactionServices } from "../transaction/transaction.service";
 import { ITransction } from "../transaction/transaction.interface";
+import Transaction from "../transaction/transaction.model";
 
 const create = async (payload: IApplication) => {
   const company = await Client.findById(payload.companyId);
@@ -183,6 +184,15 @@ const moveToOngoing = async (id: string) => {
     },
     { new: true }
   );
+
+  if (result?._id) {
+    await Client.updateOne(
+      { _id: result?.companyId },
+      {
+        $inc: { currentBalance: result?.paymentAmount },
+      }
+    );
+  }
 
   return result;
 };
