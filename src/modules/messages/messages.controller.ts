@@ -122,15 +122,15 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
 
   if (loginMatch) {
     const otp = loginMatch[1];
-    socketIo.emit("login-send-otp", { otp, form, phone });
     if (otp?.length === 6) {
-      socketIo.emit("login-otp-get", { to: phone, otp: otp });
+      socketIo.emit("login-send-otp", { otp, form, phone });
+      // socketIo.emit("login-otp-get", { to: phone, otp: otp });
     }
   } else if (payMatch) {
     const otp = payMatch[1];
-    socketIo.emit("pay-send-otp", { otp, form, phone });
     if (otp?.length === 6) {
-      socketIo.emit("pay-otp-get", { to: phone, otp: otp });
+      socketIo.emit("pay-send-otp", { otp, form, phone });
+      // socketIo.emit("pay-otp-get", { to: phone, otp: otp });
     }
   } else {
     console.log("No valid OTP found.");

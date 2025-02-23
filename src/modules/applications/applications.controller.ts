@@ -26,6 +26,18 @@ const getAll = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllCompleted = catchAsync(async (req: Request, res: Response) => {
+  const response = await applicationService.getAllCompleted(
+    req.user as Partial<IUser>
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Applications Get Successfully!",
+    data: response,
+  });
+});
+
 const getAllByAdmin = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.getAllByAdmin(
     req.user as Partial<IUser>
@@ -158,4 +170,5 @@ export const applicationController = {
   updateApplicatonComplete,
   moveToOngoing,
   getAllByAdmin,
+  getAllCompleted,
 };

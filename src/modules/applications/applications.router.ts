@@ -27,6 +27,10 @@ router
   .post(verifyedLoginUser, applicationController.create);
 
 router
+  .route("/get-all-complete")
+  .get(verifyedLoginUser, applicationController.getAllCompleted);
+
+router
   .route("/get-all-by-admin")
   .get(verifyedLoginUser, applicationController.getAllByAdmin);
 

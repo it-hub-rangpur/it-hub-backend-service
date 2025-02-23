@@ -39,6 +39,16 @@ const getAll = async (user: Partial<IUser>) => {
     .populate("assignTo");
   return result;
 };
+const getAllCompleted = async (user: Partial<IUser>) => {
+  const result = await Application.find({
+    assignTo: user._id,
+    status: true,
+  })
+    .sort({ createdAt: -1 })
+    .populate("companyId")
+    .populate("assignTo");
+  return result;
+};
 
 const getAllByAdmin = async (user: Partial<IUser>) => {
   const result = await Application.find({})
@@ -189,4 +199,5 @@ export const applicationService = {
   applicationComplete,
   moveToOngoing,
   getAllByAdmin,
+  getAllCompleted,
 };
