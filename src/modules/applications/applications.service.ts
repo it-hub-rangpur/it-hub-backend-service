@@ -32,6 +32,7 @@ const create = async (payload: IApplication) => {
 const getAll = async (user: Partial<IUser>) => {
   const result = await Application.find({
     assignTo: user._id,
+    status: false,
   })
     .sort({ createdAt: -1 })
     .populate("companyId")
