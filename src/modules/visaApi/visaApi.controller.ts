@@ -88,7 +88,7 @@ const sendOtp = catchAsync(async (req: Request, res: Response) => {
   //   message: "Sms send successfully",
   // });
 
-  res.status(200).json({
+  res.status(500).json({
     success: false,
     message: "Slot is not available",
   });

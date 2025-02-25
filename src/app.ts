@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 export const allowedOrigins = [
+  "http://127.0.0.1:5500",
   "https://payment.ivacbd.com",
   "https://it-hub.programmerhub.xyz",
   "https://it-hub-client-service.vercel.app",
