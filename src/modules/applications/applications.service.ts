@@ -138,7 +138,7 @@ const getProcessApplicationById = async (id: string) => {
     createdAt: result?.createdAt,
     slot_dates: result?.slot_dates?.length
       ? result?.slot_dates
-      : ["2025-01-27"],
+      : ["2025-02-27"],
     paymentStatus: result?.paymentStatus,
     status: result?.status,
   };
