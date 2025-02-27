@@ -131,28 +131,49 @@ const overviewInfoSubmit = catchAsync(async (req: Request, res: Response) => {
 const payTimeSlots = catchAsync(async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
   res.status(200).json({
+    // success: true,
+    // message: "",
+    // data: {
+    //   success: true,
+    //   message: "Slot found",
+    //   data: {
+    //     status: "OK",
+    //     data: [""],
+    //     slot_dates: [generateNextDay()],
+    //     slot_times: [
+    //       {
+    //         id: 180004,
+    //         ivac_id: 2,
+    //         visa_type: 18,
+    //         hour: 10,
+    //         date: generateNextDay(),
+    //         availableSlot: 0,
+    //         time_display: "10:00 - 10:59",
+    //       },
+    //     ],
+    //   },
+    // },
+
     success: true,
-    message: "",
+    message: "Slot found",
     data: {
-      success: true,
-      message: "Slot found",
-      data: {
-        status: "OK",
-        data: [""],
-        slot_dates: [generateNextDay()],
-        slot_times: [
-          {
-            id: 180004,
-            ivac_id: 2,
-            visa_type: 18,
-            hour: 10,
-            date: generateNextDay(),
-            availableSlot: 0,
-            time_display: "10:00 - 10:59",
-          },
-        ],
-      },
+      status: "OK",
+      data: [""],
+      slot_dates: ["2025-03-02"],
+      slot_times: [
+        {
+          id: 188067,
+          ivac_id: 17,
+          visa_type: 13,
+          hour: 10,
+          date: "2025-03-02",
+          availableSlot: 706,
+          time_display: "10:00 - 10:59",
+        },
+      ],
     },
+    captcha:
+      '<div class="g-recaptcha" id="hash-param" data-callback="setRecaptchaTokenPay"\n    data-sitekey="6LdOCpAqAAAAAOLNB3Vwt_H7Nw4GGCAbdYm5Brsb">\n</div>\n',
   });
 });
 
