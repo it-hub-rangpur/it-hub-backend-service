@@ -83,15 +83,15 @@ const mobileVerify = catchAsync(async (req: Request, res: Response) => {
 
 const sendOtp = catchAsync(async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
-  // res.status(200).json({
-  //   success: true,
-  //   message: "Sms send successfully",
-  // });
-
-  res.status(500).json({
-    success: false,
-    message: "Slot is not available",
+  res.status(200).json({
+    success: true,
+    message: "Sms send successfully",
   });
+
+  // res.status(500).json({
+  //   success: false,
+  //   message: "Slot is not available",
+  // });
 });
 
 const verifyOtp = catchAsync(async (req: Request, res: Response) => {

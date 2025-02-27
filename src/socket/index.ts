@@ -37,10 +37,11 @@ io.on("connection", (socket: Socket) => {
   socket.on("otp-send", async ({ phone, isTesting }) => {
     io.emit("otp-received", { phone, isTesting });
     if (isTesting) {
+      console.log("OTP sent to", phone);
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const randomDelay = Math.floor(Math.random() * 4000) + 1000;
       setTimeout(() => {
-        io.emit("otp-get", { otp, to: phone });
+        io.emit("pay-send-otp", { otp, form: "test", phone });
       }, randomDelay);
     }
   });
