@@ -116,6 +116,18 @@ const applicationInfoSubmit = catchAsync(
   }
 );
 
+const personalInfoSubmit = catchAsync(async (req: Request, res: Response) => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  res.header("Access-Control-Expose-Headers", "Location");
+  res.status(302).redirect("https://payment.ivacbd.com/overview");
+});
+
+const overviewInfoSubmit = catchAsync(async (req: Request, res: Response) => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  res.header("Access-Control-Expose-Headers", "Location");
+  res.status(302).redirect("https://payment.ivacbd.com/payment");
+});
+
 const payTimeSlots = catchAsync(async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
   res.status(200).json({
@@ -168,4 +180,6 @@ export const visaApiController = {
   payTimeSlots,
   slotPayNow,
   applicationInfoSubmit,
+  personalInfoSubmit,
+  overviewInfoSubmit,
 };

@@ -17,4 +17,10 @@ router
   .route("/application-info-submit")
   .post(visaApiController.applicationInfoSubmit);
 
+router
+  .route("/personal-info-submit")
+  .post(visaApiController.personalInfoSubmit);
+
+router.route("/overview-submit").post(visaApiController.overviewInfoSubmit);
+
 export const visaApiRouter = router;
