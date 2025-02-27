@@ -12,4 +12,9 @@ router.route("/pay-otp-verify").post(visaApiController.verifyOtp);
 router.route("/pay-slot-time").post(visaApiController.payTimeSlots);
 router.route("/paynow").post(visaApiController.slotPayNow);
 
+// new apis
+router
+  .route("/application-info-submit")
+  .post(visaApiController.applicationInfoSubmit);
+
 export const visaApiRouter = router;

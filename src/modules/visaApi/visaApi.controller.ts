@@ -108,6 +108,14 @@ const verifyOtp = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const applicationInfoSubmit = catchAsync(
+  async (req: Request, res: Response) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    res.header("Access-Control-Expose-Headers", "Location");
+    res.status(302).redirect("https://payment.ivacbd.com/personal-info");
+  }
+);
+
 const payTimeSlots = catchAsync(async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
   res.status(200).json({
@@ -159,4 +167,5 @@ export const visaApiController = {
   verifyOtp,
   payTimeSlots,
   slotPayNow,
+  applicationInfoSubmit,
 };
