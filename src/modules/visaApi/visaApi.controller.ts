@@ -88,7 +88,7 @@ const sendOtp = catchAsync(async (req: Request, res: Response) => {
     message: "Sms send successfully",
   });
 
-  // res.status(500).json({
+  // res.status(200).json({
   //   success: false,
   //   message: "Slot is not available",
   // });
@@ -185,9 +185,9 @@ const slotPayNow = catchAsync(async (req: Request, res: Response) => {
     url: "https://securepay.sslcommerz.com/gwprocess/v4/gw.php?Q=REDIRECT&SESSIONKEY=43828262A4B047AF73176050C1D9163B&cardname=",
   });
 
-  // res.status(500).json({
+  // res.status(200).json({
   //   success: false,
-  //   message: "Slot is not available",
+  //   message: "Slot is not available.",
   // });
 });
 

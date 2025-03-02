@@ -26,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.47",
     "mongoose": "^8.9.5",
+    "nopecha": "^1.0.11",
     "puppeteer": "^24.0.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",

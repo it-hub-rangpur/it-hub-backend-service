@@ -11,7 +11,7 @@ router
 
 router
   .route("/get-process/:id")
-  .get(applicationController.getProcessApplications);
+  .get(verifyedLoginUser, applicationController.getProcessApplications);
 
 router
   .route("/status/:id")

@@ -503,6 +503,16 @@ export const paymentOptions: { [key: string]: IPaymentOption } = {
     slug: "okwallet",
     link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/okwallet.png",
   },
+  visacard: {
+    name: "VISA",
+    slug: "visacard",
+    link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/visa.png",
+  },
+  mastercard: {
+    name: "MASTER",
+    slug: "mastercard",
+    link: "https://securepay.sslcommerz.com/gwprocess/v4/image/gw1/master.png",
+  },
 };
 
 export const amountChangeData: IAmountChangeData = {

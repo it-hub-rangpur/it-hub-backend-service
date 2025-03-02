@@ -25,6 +25,9 @@ const validateGoogleReCaptcha = catchAsync(
       remoteip: req.ip,
     });
 
+    console.log(body);
+    console.log(params);
+
     fetch("https://www.google.com/recaptcha/api/siteverify", {
       method: "POST",
       body: params,
@@ -53,7 +56,7 @@ const validateGoogleReCaptcha = catchAsync(
     //   statusCode: httpStatus.OK,
     //   success: true,
     //   message: "Captcha validate successfully",
-    //   // data: validateResponse,
+    //   data: validateResponse,
     // });
   }
 );

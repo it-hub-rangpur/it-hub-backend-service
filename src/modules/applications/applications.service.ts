@@ -35,7 +35,7 @@ const getAll = async (user: Partial<IUser>) => {
     assignTo: user._id,
     status: false,
   })
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .populate("companyId")
     .populate("assignTo");
   return result;
@@ -120,6 +120,7 @@ const getReadyApplications = async (userId: string) => {
 
 const getProcessApplicationById = async (id: string) => {
   const result = await Application.findById(id);
+
   return {
     _id: result?._id,
     _token: "",
