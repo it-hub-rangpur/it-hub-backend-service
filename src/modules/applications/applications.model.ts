@@ -91,6 +91,9 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       order_id: { type: String, default: "" },
       token_no: { type: String, default: "" },
     },
+    autoPayment: { type: Boolean, default: false },
+    accountNumber: { type: String, default: "" },
+    pinNumber: { type: String, default: "" },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields
