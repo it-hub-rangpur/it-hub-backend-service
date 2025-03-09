@@ -92,6 +92,8 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
   const form = message?.split("\n")[0];
   const body = message?.split("\n")[1];
 
+  socketIo.emit("auto-otp", { form, body, phone });
+
   const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
   const payOtpregex = /(\d{6})\s.*(password for verification)/i;
   const dbblmobilebankingOtpregex =
