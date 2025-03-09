@@ -97,11 +97,19 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
   const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
   const payOtpregex = /(\d{6})\s.*(password for verification)/i;
   const dbblmobilebankingOtpregex =
-    /(\d{6})\s.*(Your security code for Rocket transaction is)/i;
+    /Your security code for Rocket transaction is (\d{6})/i;
+  // const dbblmobilebankingOtpregex =
+  //   /(\d{6})\s.*(Your security code for Rocket transaction is)/i;
 
   const loginMatch = body.match(loginOtpregex);
   const payMatch = body.match(payOtpregex);
   const dbblmobilebankingMatch = body.match(dbblmobilebankingOtpregex);
+
+  // const dbblMessage = "Your security code for Rocket transaction is 705065.";
+  // const dbblmobilebankingOtpregex =
+  //   /(\d{6})\s.*(Your security code for Rocket transaction is)/i;
+
+  //   const dbblmobilebankingMatch = dbblMessage.match(dbblmobilebankingOtpregex);
 
   if (loginMatch) {
     const otp = loginMatch[1];
