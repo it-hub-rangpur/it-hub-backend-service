@@ -4,7 +4,7 @@ const TwoCaptcha = require("@2captcha/captcha-solver");
 const { Configuration, NopeCHAApi } = require("nopecha");
 
 const configuration = new Configuration({
-  apiKey: "YOUR_API_KEY",
+  apiKey: envConfig.nopeCaptchaKey,
 });
 const nopecha = new NopeCHAApi(configuration);
 
@@ -19,13 +19,14 @@ const getReCaptchaToken = async () => {
 };
 
 const getReCaptchaTokenByNope = async () => {
+  console.log("calling nopecha toke");
   const token = await nopecha.solveToken({
     type: "recaptcha2",
     sitekey: envConfig.websiteKey,
     url: envConfig?.websiteURL,
   });
 
-  console.log(token);
+  console.log("token", token);
   return token;
 };
 

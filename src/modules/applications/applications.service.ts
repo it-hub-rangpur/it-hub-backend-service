@@ -69,6 +69,10 @@ const updateOne = async (id: string, payload: IApplication) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Application already approved");
   }
 
+  if (payload?.paymentStatus?.status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Application already approved");
+  }
+
   const response = await Application.findByIdAndUpdate(id, payload, {
     new: true,
   });
@@ -83,6 +87,10 @@ const updateByPhone = async (phone: string, payload: Partial<IApplication>) => {
 };
 
 const deleteOne = async (id: string, payload: Partial<IApplication>) => {
+  if (payload?.paymentStatus?.status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Application already approved");
+  }
+
   const response = await Application.findByIdAndDelete(id);
   await Client.updateOne(
     { _id: payload.companyId },
@@ -142,6 +150,9 @@ const getProcessApplicationById = async (id: string) => {
       : [generateNextDay()],
     paymentStatus: result?.paymentStatus,
     status: result?.status,
+    autoPayment: result?.autoPayment,
+    accountNumber: result?.accountNumber,
+    pinNumber: result?.pinNumber,
   };
 };
 

@@ -16,6 +16,7 @@ export const allowedOrigins = [
   "http://localhost:5000",
   "https://vps-it-hub.pkshohag240.workers.dev",
   "https://cms.it-hub.agency",
+  "http://127.0.0.1:5500",
 ];
 
 app.use(

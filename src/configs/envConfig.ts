@@ -10,6 +10,7 @@ const envConfig = {
   websiteURL: process.env.WEBSITE_URL as string,
   reCaptchaEndpoint: process.env.RECAPTCHAENDPOINT as string,
   recaptchaKey: process.env.RECAPTCHAKEY as string,
+  nopeCaptchaKey: process.env.NOPECHAAPIKEY as string,
   websiteKey: process.env.WEBSITEKEY as string,
   secretKey: process.env.SECTECT_TOKEN_KEY as string,
 };

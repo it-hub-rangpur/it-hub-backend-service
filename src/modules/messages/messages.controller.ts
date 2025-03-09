@@ -59,9 +59,12 @@ const autoOtp = catchAsync(async (req: Request, res: Response) => {
 
   const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
   const payOtpregex = /(\d{6})\s.*(password for verification)/i;
+  const dbblmobilebankingOtpregex =
+    /(\d{6})\s.*(Your security code for Rocket transaction is)/i;
 
   const loginMatch = body.key.match(loginOtpregex);
   const payMatch = body.key.match(payOtpregex);
+  const dbblmobilebankingMatch = body.key.match(dbblmobilebankingOtpregex);
 
   if (loginMatch) {
     console.log("This is a login OTP.");
@@ -69,6 +72,9 @@ const autoOtp = catchAsync(async (req: Request, res: Response) => {
   } else if (payMatch) {
     console.log("This is a payment OTP.");
     console.log(`Code: ${payMatch[1]}`);
+  } else if (dbblmobilebankingMatch) {
+    console.log("This is a Rocket OTP.");
+    console.log(`Code: ${dbblmobilebankingMatch[1]}`);
   } else {
     console.log("No valid OTP found.");
   }
@@ -78,32 +84,6 @@ const autoOtp = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: "Messages Created Successfully!",
   });
-
-  // const payload = req.body;
-  // const form = payload?.key?.split(",")[0].split(":")[1]?.trim();
-
-  // const messageBody = payload?.key?.split("\n")[1];
-  // const OTP = messageBody
-  //   ?.split("is your one time password for verification")[0]
-  //   ?.trim();
-
-  // const to = req?.query?.to as string;
-
-  // if (OTP?.length === 6) {
-  //   socketIo.emit("otp-get", { to, otp: OTP });
-  //   await messagesService.autoOtp({ to, otp: OTP });
-  //   sendResponse(res, {
-  //     statusCode: httpStatus.OK,
-  //     success: true,
-  //     message: "OTP Get Successfully!",
-  //   });
-  // } else {
-  //   sendResponse(res, {
-  //     statusCode: httpStatus.OK,
-  //     success: true,
-  //     message: "Message Received!",
-  //   });
-  // }
 });
 
 const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
@@ -112,13 +92,16 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
   const form = message?.split("\n")[0];
   const body = message?.split("\n")[1];
 
-  await messagesService.create(req?.body);
+  console.log(body);
 
   const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
   const payOtpregex = /(\d{6})\s.*(password for verification)/i;
+  const dbblmobilebankingOtpregex =
+    /(\d{6})\s.*(Your security code for Rocket transaction is)/i;
 
   const loginMatch = body.match(loginOtpregex);
   const payMatch = body.match(payOtpregex);
+  const dbblmobilebankingMatch = body.match(dbblmobilebankingOtpregex);
 
   if (loginMatch) {
     const otp = loginMatch[1];
@@ -132,6 +115,13 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
       socketIo.emit("pay-send-otp", { otp, form, phone });
       // socketIo.emit("pay-otp-get", { to: phone, otp: otp });
     }
+  } else if (dbblmobilebankingMatch) {
+    const otp = dbblmobilebankingMatch[1];
+    console.log(otp);
+    // if (otp?.length === 6) {
+    //   socketIo.emit("pay-send-otp", { otp, form, phone });
+    //   // socketIo.emit("pay-otp-get", { to: phone, otp: otp });
+    // }
   } else {
     console.log("No valid OTP found.");
   }

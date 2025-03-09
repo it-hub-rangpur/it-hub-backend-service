@@ -62,6 +62,7 @@ const getOne = catchAsync(async (req: Request, res: Response) => {
 
 const updateOne = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.updateOne(req.params.id, req.body);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
