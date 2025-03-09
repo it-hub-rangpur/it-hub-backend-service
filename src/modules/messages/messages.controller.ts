@@ -92,8 +92,6 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
   const form = message?.split("\n")[0];
   const body = message?.split("\n")[1];
 
-  console.log(body);
-
   const loginOtpregex = /(\d{6})\s.*(password for ivac login)/i;
   const payOtpregex = /(\d{6})\s.*(password for verification)/i;
   const dbblmobilebankingOtpregex =
@@ -117,11 +115,9 @@ const sendAutoOtp = catchAsync(async (req: Request, res: Response) => {
     }
   } else if (dbblmobilebankingMatch) {
     const otp = dbblmobilebankingMatch[1];
-    console.log(otp);
-    // if (otp?.length === 6) {
-    //   socketIo.emit("pay-send-otp", { otp, form, phone });
-    //   // socketIo.emit("pay-otp-get", { to: phone, otp: otp });
-    // }
+    if (otp?.length === 6) {
+      socketIo.emit("dbblmobilebanking-otp", { otp, form, acc: phone });
+    }
   } else {
     console.log("No valid OTP found.");
   }
