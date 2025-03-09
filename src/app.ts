@@ -17,6 +17,7 @@ export const allowedOrigins = [
   "https://vps-it-hub.pkshohag240.workers.dev",
   "https://cms.it-hub.agency",
   "http://127.0.0.1:5500",
+  "https://ecom1.dutchbanglabank.com",
 ];
 
 app.use(
