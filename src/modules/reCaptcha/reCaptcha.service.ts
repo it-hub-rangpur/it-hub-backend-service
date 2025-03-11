@@ -1,5 +1,8 @@
 import envConfig from "../../configs/envConfig";
 const TwoCaptcha = require("@2captcha/captcha-solver");
+const ac = require("@antiadmin/anticaptchaofficial");
+
+ac.setAPIKey(envConfig?.antiCaptchaKey);
 
 const { Configuration, NopeCHAApi } = require("nopecha");
 
@@ -19,18 +22,25 @@ const getReCaptchaToken = async () => {
 };
 
 const getReCaptchaTokenByNope = async () => {
-  console.log("calling nopecha toke");
   const token = await nopecha.solveToken({
     type: "recaptcha2",
     sitekey: envConfig.websiteKey,
     url: envConfig?.websiteURL,
   });
-
-  console.log("token", token);
   return token;
+};
+
+const getReCaptchaTokenByAnti = async () => {
+  const gresponse = await ac.solveRecaptchaV2Proxyless(
+    envConfig?.websiteURL,
+    envConfig.websiteKey,
+    true
+  );
+  return gresponse;
 };
 
 export const reCaptchaService = {
   getReCaptchaToken,
   getReCaptchaTokenByNope,
+  getReCaptchaTokenByAnti,
 };

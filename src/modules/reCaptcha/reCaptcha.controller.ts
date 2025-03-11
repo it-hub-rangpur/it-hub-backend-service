@@ -3,7 +3,6 @@ import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 import { reCaptchaService } from "./reCaptcha.service";
-import axios from "axios";
 
 const getReCaptchaToken = catchAsync(async (req: Request, res: Response) => {
   const result = await reCaptchaService.getReCaptchaToken();
@@ -65,7 +64,18 @@ const getReCaptchaTokenByNope = catchAsync(
   async (req: Request, res: Response) => {
     const response = await reCaptchaService.getReCaptchaTokenByNope();
 
-    console.log("response", response);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Recaptcha Created Successfully!",
+      data: response,
+    });
+  }
+);
+
+const getReCaptchaTokenByAnti = catchAsync(
+  async (req: Request, res: Response) => {
+    const response = await reCaptchaService.getReCaptchaTokenByAnti();
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -80,4 +90,5 @@ export const reCaptchaController = {
   getReCaptchaToken,
   validateGoogleReCaptcha,
   getReCaptchaTokenByNope,
+  getReCaptchaTokenByAnti,
 };

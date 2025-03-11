@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import { applicationService } from "./applications.service";
 import { IUser } from "../user/user.interface";
 import { socketIo } from "../../socket";
+import ApiError from "../../errorHandelars/ApiError";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.create(req.body);
@@ -61,6 +62,18 @@ const getOne = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateOne = catchAsync(async (req: Request, res: Response) => {
+  const isExist = await applicationService.getOne(req.params.id);
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  if (isExist?.paymentStatus?.url) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Application already approved, you can't update"
+    );
+  }
+
   const response = await applicationService.updateOne(req.params.id, req.body);
 
   sendResponse(res, {
@@ -86,6 +99,18 @@ const updateByPhone = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteOne = catchAsync(async (req: Request, res: Response) => {
+  const isExist = await applicationService.getOne(req.params.id);
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  if (isExist?.paymentStatus?.url) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Application already approved, you can't delete"
+    );
+  }
+
   const response = await applicationService.deleteOne(req.params.id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
