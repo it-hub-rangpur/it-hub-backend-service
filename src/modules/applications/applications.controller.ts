@@ -6,6 +6,9 @@ import { applicationService } from "./applications.service";
 import { IUser } from "../user/user.interface";
 import { socketIo } from "../../socket";
 import ApiError from "../../errorHandelars/ApiError";
+import pick from "../../shared/Pick";
+import { paginationFields } from "../../Constants/Pagination";
+import { applicationFilterableFields } from "./applications.model";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.create(req.body);
@@ -40,8 +43,12 @@ const getAllCompleted = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllByAdmin = catchAsync(async (req: Request, res: Response) => {
+  const paginationOptions = pick(req.query, paginationFields);
+  const filters = pick(req.query, applicationFilterableFields);
+
   const response = await applicationService.getAllByAdmin(
-    req.user as Partial<IUser>
+    paginationOptions,
+    filters
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -161,8 +168,11 @@ const getProcessApplications = catchAsync(
 
 const updateApplicatonComplete = catchAsync(
   async (req: Request, res: Response) => {
+    const { status } = req.body;
+
     const response = await applicationService.applicationComplete(
-      req.params.id
+      req.params.id,
+      status
     );
     sendResponse(res, {
       statusCode: httpStatus.OK,

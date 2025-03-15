@@ -106,4 +106,17 @@ const Application = model<IApplication, IApplicationModel>(
   applicationSchema
 );
 
+export const applicationFilterableFields = ["searchTerm", "fileStatus"];
+export type IApplicationFilters = {
+  searchTerm?: string;
+  fileStatus?: string;
+};
+
+export const bookSearchableFields = [
+  "title",
+  "author",
+  "genre",
+  "publicationDate",
+];
+
 export default Application;

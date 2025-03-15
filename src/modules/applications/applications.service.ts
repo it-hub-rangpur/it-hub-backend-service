@@ -3,11 +3,15 @@ import { paymentOptions } from "../../Constants/ApplicationsContans";
 import ApiError from "../../errorHandelars/ApiError";
 import Client from "../clients/clients.model";
 import { IApplication } from "./applications.interface";
-import Application from "./applications.model";
+import Application, { IApplicationFilters } from "./applications.model";
 import { IUser } from "../user/user.interface";
 import generateNextDay from "../../utils/generateNextDay";
 import { transactionServices } from "../transaction/transaction.service";
 import { ITransction } from "../transaction/transaction.interface";
+import { IPaginationOptions } from "../../utils/paginationFields";
+import { paginationHelpers } from "../../helpers/PaginationHelper";
+import { SortOrder } from "mongoose";
+import axios from "axios";
 
 const create = async (payload: IApplication) => {
   const company = await Client.findById(payload.companyId);
@@ -50,12 +54,76 @@ const getAllCompleted = async (user: Partial<IUser>) => {
   return result;
 };
 
-const getAllByAdmin = async (user: Partial<IUser>) => {
-  const result = await Application.find({})
-    .sort({ createdAt: -1 })
+const getAllByAdmin = async (
+  paginationOptions: IPaginationOptions,
+  filters: IApplicationFilters
+) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
+
+  const { searchTerm, fileStatus, ...filtersData } = filters;
+
+  const andConditions = [];
+
+  if (fileStatus) {
+    if (fileStatus == "Completed") {
+      andConditions.push({
+        "paymentStatus.status": "SUCCESS",
+        status: true,
+      });
+    } else if (fileStatus == "On Payment") {
+      andConditions.push({
+        "paymentStatus.status": "SUCCESS",
+        status: false,
+      });
+    } else if (fileStatus == "On Progress") {
+      andConditions.push({
+        "paymentStatus.status": "",
+        status: false,
+      });
+    } else if (fileStatus == "all") {
+      andConditions.push({
+        $or: [
+          {
+            "paymentStatus.status": "SUCCESS",
+            status: false,
+          },
+          {
+            "paymentStatus.status": "",
+            status: false,
+          },
+          {
+            status: true,
+          },
+        ],
+      });
+    }
+  }
+
+  const whereConditions =
+    andConditions.length > 0 ? { $and: andConditions } : {};
+
+  const sortConditions: { [key: string]: SortOrder } = {};
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder;
+  }
+
+  const total = await Application.countDocuments(whereConditions);
+  const result = await Application.find(whereConditions)
+    .sort(sortConditions)
+    .skip(skip)
+    .limit(limit)
     .populate("companyId")
     .populate("assignTo");
-  return result;
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
 };
 
 const getOne = async (id: string) => {
@@ -155,30 +223,52 @@ const getProcessApplicationById = async (id: string) => {
   };
 };
 
-const applicationComplete = async (id: string) => {
-  const result = await Application.findByIdAndUpdate(
-    {
-      _id: id,
-    },
-    { status: true },
-    { new: true }
-  );
+const applicationComplete = async (id: string, status: string) => {
+  let result;
+  if (status === "Completed") {
+    result = await Application.findByIdAndUpdate(
+      {
+        _id: id,
+      },
+      { status: true },
+      { new: true }
+    );
 
-  const payload = {
-    company: result?.companyId,
-    type: "invoice",
-    files: result?.info?.length,
-    amount: result?.paymentAmount,
-    discount: 0,
-    payAmount: result?.paymentAmount,
-    paymentBy: result?.assignTo,
-    comment: "",
-  };
+    const payload = {
+      company: result?.companyId,
+      type: "invoice",
+      files: result?.info?.length,
+      amount: result?.paymentAmount,
+      discount: 0,
+      payAmount: result?.paymentAmount,
+      paymentBy: result?.assignTo,
+      comment: "",
+    };
 
-  if (result?._id) {
-    await transactionServices.clientInvoice(payload as ITransction);
+    if (result?._id) {
+      await transactionServices.clientInvoice(payload as ITransction);
+    }
+  } else if (status === "On Payment") {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Application can't move to On Payment"
+    );
+  } else {
+    result = await Application.findByIdAndUpdate(
+      {
+        _id: id,
+      },
+      {
+        paymentStatus: {
+          status: "",
+          url: "",
+        },
+        status: false,
+      },
+      { new: true }
+    );
   }
-  return result;
+  return status;
 };
 
 const moveToOngoing = async (id: string) => {
