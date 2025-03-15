@@ -41,7 +41,7 @@ router
   .get(verifyedLoginUser, applicationController.getOne);
 
 router
-  .route("/payment-status/:phone")
+  .route("/payment-status/:id")
   .patch(verifyedLoginUser, applicationController.updateByPhone);
 
 router.route("/set-slot-times").post(applicationController.setSlotDates);

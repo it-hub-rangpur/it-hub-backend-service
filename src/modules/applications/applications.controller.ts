@@ -86,7 +86,7 @@ const updateOne = catchAsync(async (req: Request, res: Response) => {
 
 const updateByPhone = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.updateByPhone(
-    req.params.phone,
+    req.params.id,
     req.body
   );
 

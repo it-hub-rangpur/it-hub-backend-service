@@ -34,6 +34,7 @@ export interface IApplication extends Document {
     order_id: string;
     token_no: string;
   };
+  paymentDate: Date;
   autoPayment: boolean;
   accountNumber: string;
   pinNumber: string;

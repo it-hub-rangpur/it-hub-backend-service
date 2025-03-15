@@ -8,7 +8,6 @@ import { IUser } from "../user/user.interface";
 import generateNextDay from "../../utils/generateNextDay";
 import { transactionServices } from "../transaction/transaction.service";
 import { ITransction } from "../transaction/transaction.interface";
-import Transaction from "../transaction/transaction.model";
 
 const create = async (payload: IApplication) => {
   const company = await Client.findById(payload.companyId);
@@ -79,8 +78,8 @@ const updateOne = async (id: string, payload: IApplication) => {
   return response;
 };
 
-const updateByPhone = async (phone: string, payload: Partial<IApplication>) => {
-  const response = await Application.findOneAndUpdate({ phone }, payload, {
+const updateByPhone = async (id: string, payload: Partial<IApplication>) => {
+  const response = await Application.findByIdAndUpdate(id, payload, {
     new: true,
   });
   return response;

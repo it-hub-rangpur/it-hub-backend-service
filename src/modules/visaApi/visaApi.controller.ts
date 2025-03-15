@@ -83,6 +83,10 @@ const mobileVerify = catchAsync(async (req: Request, res: Response) => {
 
 const sendOtp = catchAsync(async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
+  // res.status(419).json({
+  //   message: "Your session has expired. Please login again.",
+  //   redirect_url: "https://payment.ivacbd.com",
+  // });
   res.status(200).json({
     success: true,
     message: "Sms send successfully",
@@ -178,7 +182,7 @@ const payTimeSlots = catchAsync(async (req: Request, res: Response) => {
 });
 
 const slotPayNow = catchAsync(async (req: Request, res: Response) => {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  // await new Promise((resolve) => setTimeout(resolve, 300000));
   res.status(200).json({
     success: true,
     message: "Slot booking initiated",

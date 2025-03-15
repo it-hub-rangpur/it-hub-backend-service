@@ -91,6 +91,7 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
       order_id: { type: String, default: "" },
       token_no: { type: String, default: "" },
     },
+    paymentDate: { type: Date, default: null },
     autoPayment: { type: Boolean, default: false },
     accountNumber: { type: String, default: "" },
     pinNumber: { type: String, default: "" },
