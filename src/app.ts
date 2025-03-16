@@ -18,7 +18,7 @@ export const allowedOrigins = [
   "https://cms.it-hub.agency",
   "http://127.0.0.1:5500",
   "https://ecom1.dutchbanglabank.com",
-  "http://127.0.0.1:8787/",
+  "http://127.0.0.1:8787",
 ];
 
 app.use(
