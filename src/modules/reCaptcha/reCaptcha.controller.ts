@@ -68,7 +68,7 @@ const getReCaptchaTokenByNope = catchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: "Recaptcha Created Successfully!",
-      data: response,
+      data: null,
     });
   }
 );
