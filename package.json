@@ -20,10 +20,11 @@
     "cheerio": "^1.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2",
     "http-status": "^1.6.2",
     "https": "^1.0.0",
+    "https-proxy-agent": "^7.0.6",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.47",
     "mongoose": "^8.9.5",
@@ -35,6 +36,7 @@
     "socket.io": "^4.8.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.1.6",
+    "undici": "^7.5.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
