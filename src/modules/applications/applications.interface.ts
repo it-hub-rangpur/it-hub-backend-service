@@ -39,6 +39,10 @@ export interface IApplication extends Document {
   accountNumber: string;
   pinNumber: string;
   createdAt: string;
+  serverInfo: {
+    cookies: string[];
+    csrfToken: string;
+  };
 }
 
 export interface IApplicationModel extends Model<IApplication, {}, {}> {}

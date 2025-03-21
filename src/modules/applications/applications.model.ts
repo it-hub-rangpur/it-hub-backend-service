@@ -95,6 +95,10 @@ const applicationSchema: Schema<IApplication> = new Schema<IApplication>(
     autoPayment: { type: Boolean, default: false },
     accountNumber: { type: String, default: "" },
     pinNumber: { type: String, default: "" },
+    serverInfo: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

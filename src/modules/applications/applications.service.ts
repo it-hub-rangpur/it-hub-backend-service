@@ -127,7 +127,7 @@ const getAllByAdmin = async (
 };
 
 const getOne = async (id: string) => {
-  const result = await Application.findById(id).select("-password");
+  const result = await Application.findById(id);
   return result;
 };
 
