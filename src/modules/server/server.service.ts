@@ -470,7 +470,7 @@ const applicationInfoSubmit = async (application: IApplication) => {
 
     const path = getLocationPathname(location as string);
 
-    if (path === "/personal-info-submit") {
+    if (path === "/personal-info") {
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
@@ -583,7 +583,7 @@ const personalInfoSubmit = async (application: IApplication) => {
 
     const path = getLocationPathname(location as string);
 
-    if (path === "/overview-submit") {
+    if (path === "/overview") {
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
