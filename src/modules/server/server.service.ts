@@ -1,4 +1,4 @@
-import makeRequest from "./utils/makeRequest";
+import makeRequest, { retryCodes } from "./utils/makeRequest";
 import { getLocationPathname, getSessionCSRFToken } from "./utils/helpers";
 import { IApplication } from "../applications/applications.interface";
 import {
@@ -8,6 +8,7 @@ import {
 } from "./utils/appPayload";
 import { applicationService } from "../applications/applications.service";
 import httpStatus from "http-status";
+import { socketIo } from "../../socket";
 
 const proxyInfo = {
   protocol: "http",
@@ -19,7 +20,7 @@ const proxyInfo = {
   },
 };
 
-const createNewSession = async (cookieinfo: string[]) => {
+const createNewSession = async (cookieinfo: string[], id: string) => {
   const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
 
   const reqInfo = {
@@ -29,11 +30,49 @@ const createNewSession = async (cookieinfo: string[]) => {
     cookies: cookieinfo,
   };
 
-  const serverResponse = await makeRequest(reqInfo);
+  socketIo.emit("server-logs", {
+    id,
+    log: {
+      action: "Creating or connecting to a new session",
+      status: "Pending",
+      color: "error",
+    },
+  });
+
+  const serverResponse = await makeRequest(reqInfo, id);
+  const status = serverResponse?.status;
+
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id,
+      log: {
+        action: `Error | Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+
   const cookies = serverResponse.headers.getSetCookie();
   const htmlContent = await serverResponse?.text();
   const { csrfToken, userImg } = getSessionCSRFToken(htmlContent);
 
+  socketIo.emit("server-logs", {
+    id,
+    log: {
+      action: `Session Created | ${
+        userImg ? "User logged in!" : "User not logged in!"
+      }`,
+      status: "Success",
+      color: "success",
+    },
+  });
   return {
     csrfToken,
     userImg,
@@ -59,16 +98,59 @@ const sendLoginOTP = async (application: IApplication) => {
     data: vefiryPayload,
   };
 
-  const mobileVerifyResponse = await makeRequest(reqInfo);
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Mobile number verifying...",
+      status: "Pending",
+      color: "error",
+    },
+  });
+
+  const mobileVerifyResponse = await makeRequest(
+    reqInfo,
+    application?._id as string
+  );
   const status = mobileVerifyResponse?.status;
-  const cookies = mobileVerifyResponse?.headers.getSetCookie();
+
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Error | Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
 
   if (status === 302) {
+    const cookies = mobileVerifyResponse?.headers.getSetCookie();
     const location = mobileVerifyResponse?.headers.get("Location");
     const path = getLocationPathname(location as string);
 
     if (path === "/login-auth") {
-      console.log("mobile verify successfully");
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Mobile number verified!",
+          status: "Success",
+          color: "success",
+        },
+      });
+      await applicationService.updateByPhone(application?._id as string, {
+        serverInfo: {
+          ...application?.serverInfo,
+          cookies,
+        },
+      });
+
       const authPayload = getAuthVerifyPayload(application, csrfToken);
       const reqInfo = {
         method: "POST",
@@ -77,13 +159,59 @@ const sendLoginOTP = async (application: IApplication) => {
         cookies: cookies,
         data: authPayload,
       };
-      const authVefityResponse = await makeRequest(reqInfo);
+
+      console.log("mobile verify successfully");
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Authenticating...",
+          status: "Pending",
+          color: "error",
+        },
+      });
+      const authVefityResponse = await makeRequest(
+        reqInfo,
+        application?._id as string
+      );
       const status = authVefityResponse?.status;
+
+      if (retryCodes.includes(status)) {
+        socketIo.emit("server-logs", {
+          id: application?._id,
+          log: {
+            action: `Error | Status:${status} | All attempts failed.`,
+            status: "Failed",
+            color: "error",
+          },
+        });
+        return {
+          success: false,
+          statusCode: status,
+          path: reqInfo?.path,
+          data: null,
+        };
+      }
 
       if (status === 302) {
         const location = authVefityResponse?.headers.get("Location");
         const path = getLocationPathname(location as string);
         if (path === "/login-otp") {
+          socketIo.emit("server-logs", {
+            id: application?._id,
+            log: {
+              action: "Authenticated!",
+              status: "Success",
+              color: "success",
+            },
+          });
+          socketIo.emit("server-logs", {
+            id: application?._id,
+            log: {
+              action: "Login OTP Sent!",
+              status: "Success",
+              color: "success",
+            },
+          });
           console.log("auth verify successfully");
           const cookieinfo = authVefityResponse?.headers.getSetCookie();
           return {
@@ -94,6 +222,14 @@ const sendLoginOTP = async (application: IApplication) => {
             cookies: cookieinfo,
           };
         } else {
+          socketIo.emit("server-logs", {
+            id: application?._id,
+            log: {
+              action: "Authentication Failed! | Password did not match!",
+              status: "Failed",
+              color: "error",
+            },
+          });
           return {
             status,
             success: false,
@@ -104,10 +240,10 @@ const sendLoginOTP = async (application: IApplication) => {
       }
     } else {
       return {
-        status,
         success: false,
-        path,
-        message: "Mobile Verification Failed or Session Expired",
+        statusCode: status,
+        path: "/mobile-verify",
+        data: null,
       };
     }
   }
@@ -128,19 +264,68 @@ const vefiryLoginOTP = async (application: IApplication, otp: string) => {
     data: vefiryPayload,
   };
 
-  const otpVerifyResponse = await makeRequest(reqInfo);
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Verifying OTP...",
+      status: "Pending",
+      color: "error",
+    },
+  });
+
+  const otpVerifyResponse = await makeRequest(
+    reqInfo,
+    application?._id as string
+  );
 
   const status = otpVerifyResponse?.status;
   const cookiesInfo = otpVerifyResponse?.headers.getSetCookie();
+
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Error | Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
 
   if (status === 302) {
     const location = otpVerifyResponse?.headers.get("Location");
     const path = getLocationPathname(location as string);
     if (path === "/") {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "OTP verified! | Creating new session...",
+          status: "Pending",
+          color: "error",
+        },
+      });
       console.log("OTP verify successfully");
-      const sessionResponse = await createNewSession(cookiesInfo as string[]);
+      const sessionResponse = await createNewSession(
+        cookiesInfo as string[],
+        application?._id as string
+      );
       const { cookies, csrfToken, userImg } = sessionResponse;
       if (userImg) {
+        socketIo.emit("server-logs", {
+          id: application?._id,
+          log: {
+            action: "Session created! | User logged in successfully",
+            status: "Success",
+            color: "success",
+          },
+        });
+
         console.log("Login Successfully");
         return {
           status,
@@ -153,27 +338,52 @@ const vefiryLoginOTP = async (application: IApplication, otp: string) => {
         };
       } else {
         console.log("Session Not Found! Please create new session");
+        socketIo.emit("server-logs", {
+          id: application?._id,
+          log: {
+            action: "OTP did not match! or Session Not Found!",
+            status: "Success",
+            color: "success",
+          },
+        });
+
         return {
           status,
-          success: true,
-          message: "Session Not Found! Please create new session",
+          success: false,
+          message: "OTP did not match! or Session Not Found!",
           path,
           cookies,
           csrfToken,
         };
       }
     } else {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "OTP Verification Failed!",
+          status: "Failed",
+          color: "error",
+        },
+      });
       return {
-        status,
         success: false,
-        path,
-        message: "OTP Verification Failed or Session Expired",
+        statusCode: status,
+        path: reqInfo?.path,
+        data: null,
       };
     }
   }
 };
 
 const loggedOut = async (id: string) => {
+  socketIo.emit("server-logs", {
+    id,
+    log: {
+      action: "User logging out!",
+      status: "Pending",
+      color: "error",
+    },
+  });
   const response = await applicationService.updateByPhone(id, {
     serverInfo: {
       csrfToken: "",
@@ -182,11 +392,19 @@ const loggedOut = async (id: string) => {
   });
 
   if (response?._id) {
+    socketIo.emit("server-logs", {
+      id,
+      log: {
+        action: "User logged out successfully!",
+        status: "Success",
+        color: "success",
+      },
+    });
     return {
       status: httpStatus.OK,
       success: true,
       message: "Logout Successfully",
-      path: "/",
+      path: "/verify-otp",
       userImg: "",
     };
   }

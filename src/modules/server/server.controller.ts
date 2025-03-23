@@ -17,29 +17,41 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
   const serverInfo = application?.serverInfo;
   const cookiesData = serverInfo?.cookies;
 
-  const response = await serverService.createNewSession(cookiesData ?? []);
-  const { cookies, csrfToken, userImg } = response;
+  const response = await serverService.createNewSession(cookiesData ?? [], id);
 
-  if (csrfToken) {
-    console.log("session created successfully");
-    await applicationService.updateByPhone(id, {
-      serverInfo: {
-        csrfToken,
-        cookies,
+  if (!response?.success) {
+    sendResponse(res, {
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: `Session not created!`,
+      data: {
+        path: response?.path,
+        status: false,
+      },
+    });
+  } else {
+    const { cookies, csrfToken, userImg } = response;
+
+    if (csrfToken && cookies) {
+      console.log("session created successfully");
+      await applicationService.updateByPhone(id, {
+        serverInfo: {
+          csrfToken,
+          cookies,
+        },
+      });
+    }
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: `Session Created Successfully!`,
+      data: {
+        message: userImg ? "User logged in!" : "User not logged in!",
+        csrfToken: csrfToken ?? null,
+        user: userImg ?? null,
       },
     });
   }
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: `Session Created Successfully!`,
-    data: {
-      message: userImg ? "User logged in!" : "User not logged in!",
-      csrfToken: csrfToken ?? null,
-      user: userImg ?? null,
-    },
-  });
 });
 
 const sendLoginOTP = catchAsync(async (req: Request, res: Response) => {
@@ -54,12 +66,12 @@ const sendLoginOTP = catchAsync(async (req: Request, res: Response) => {
 
   if (!response?.success) {
     sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: response?.message,
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: `Failed to send OTP!`,
       data: {
         path: response?.path,
-        status: response?.status,
+        status: false,
       },
     });
   } else {
@@ -94,7 +106,7 @@ const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
 
   if (!response?.success) {
     sendResponse(res, {
-      statusCode: httpStatus.OK,
+      statusCode: response?.statusCode || 500,
       success: true,
       message: response?.message,
       data: {
@@ -131,6 +143,7 @@ const loggedOut = catchAsync(async (req: Request, res: Response) => {
   }
 
   const response = await serverService.loggedOut(id);
+
   sendResponse(res, {
     statusCode: response?.status as number,
     success: response?.success as boolean,

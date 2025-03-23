@@ -179,6 +179,7 @@ const getReadyApplications = async (userId: string) => {
       visaType: item?.visaType,
       phone: item?.phone,
       password: item?.password,
+      email: item?.email,
       info: item?.info,
       otp: item?.otp,
       visit_purpose: item?.visit_purpose,
@@ -188,6 +189,11 @@ const getReadyApplications = async (userId: string) => {
       slot_dates: item?.slot_dates?.length
         ? item?.slot_dates
         : [generateNextDay()],
+      paymentStatus: item?.paymentStatus,
+      status: item?.status,
+      autoPayment: item?.autoPayment,
+      accountNumber: item?.accountNumber,
+      pinNumber: item?.pinNumber,
     };
   });
   return readyData;
