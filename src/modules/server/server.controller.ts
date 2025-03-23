@@ -19,7 +19,7 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
 
   const response = await serverService.createNewSession(cookiesData ?? [], id);
 
-  if (!response?.success) {
+  if (response?.success === false) {
     sendResponse(res, {
       statusCode: response?.statusCode || 500,
       success: response?.success || false,
@@ -64,10 +64,10 @@ const sendLoginOTP = catchAsync(async (req: Request, res: Response) => {
 
   const response = await serverService.sendLoginOTP(application);
 
-  if (!response?.success) {
+  if (response?.success === false) {
     sendResponse(res, {
       statusCode: response?.statusCode || 500,
-      success: response?.success || false,
+      success: response?.success === false || false,
       message: `Failed to send OTP!`,
       data: {
         path: response?.path,
@@ -104,7 +104,7 @@ const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
 
   const response = await serverService.vefiryLoginOTP(application, otp);
 
-  if (!response?.success) {
+  if (response?.success === false) {
     sendResponse(res, {
       statusCode: response?.statusCode || 500,
       success: true,
