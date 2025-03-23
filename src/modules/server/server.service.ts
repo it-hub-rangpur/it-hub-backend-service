@@ -500,10 +500,10 @@ const applicationInfoSubmit = async (application: IApplication) => {
         },
       });
       return {
-        statusCode: status,
+        statusCode: 200,
         success: false,
         message: "Failed to submit application info",
-        path: reqInfo?.path,
+        path: path,
         data: null,
       };
     }
