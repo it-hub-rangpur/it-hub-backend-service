@@ -21,7 +21,7 @@ const makeRequest = async (
   requestInfo: IMakeRequest,
   _id: string,
   retries = 5
-) => {
+): Promise<any> => {
   const client = new ProxyAgent({ uri: requestInfo.uri });
   const headers = new Headers();
   headers.set("accept-language", "en-US,en;q=0.9");
@@ -47,6 +47,7 @@ const makeRequest = async (
 
   headers.set("Cookie", requestCookie?.join("; "));
   const htmlResponse = await fetch(targetUrl + requestInfo?.path, {
+    dispatcher: client,
     method: requestInfo?.method,
     headers: headers,
     body:
