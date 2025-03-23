@@ -2,8 +2,11 @@ import makeRequest, { retryCodes } from "./utils/makeRequest";
 import { getLocationPathname, getSessionCSRFToken } from "./utils/helpers";
 import { IApplication } from "../applications/applications.interface";
 import {
+  getApplicationInfoSubmitPayload,
   getAuthVerifyPayload,
   getOtpVerifyPayload,
+  getOverviewInfoSubmitPayload,
+  getPersonalInfoSubmitPayload,
   mobileVerifyPayload,
 } from "./utils/appPayload";
 import { applicationService } from "../applications/applications.service";
@@ -410,9 +413,348 @@ const loggedOut = async (id: string) => {
   }
 };
 
+const applicationInfoSubmit = async (application: IApplication) => {
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Application info submitting...",
+      status: "Pending",
+      color: "error",
+    },
+  });
+
+  const cookieinfo = application?.serverInfo?.cookies ?? [];
+  const csrfToken = application?.serverInfo?.csrfToken ?? "";
+  const appplicationInfoPayload = getApplicationInfoSubmitPayload(
+    application,
+    csrfToken
+  );
+
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const reqInfo = {
+    method: "POST",
+    path: "/application-info-submit",
+    uri: proxyUrl,
+    cookies: cookieinfo,
+    data: appplicationInfoPayload,
+  };
+
+  const applicationInfoResponse = await makeRequest(
+    reqInfo,
+    application?._id as string
+  );
+
+  const status = applicationInfoResponse?.status;
+
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Error | Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+
+  if (status === 302) {
+    const cookie = applicationInfoResponse?.headers?.get("set-cookie");
+    const location = applicationInfoResponse?.headers?.get("Location");
+
+    const path = getLocationPathname(location as string);
+
+    if (path === "/personal-info-submit") {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Application info submitted! | try to submit personal info",
+          status: "Success",
+          color: "success",
+        },
+      });
+
+      return {
+        statusCode: httpStatus.OK,
+        success: true,
+        path: path,
+        message: "Application info submitted! | try to submit personal info",
+        data: {
+          success: true,
+          cookies: cookie,
+        },
+      };
+    } else {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Failed to submit application info",
+          status: "Failed",
+          color: "error",
+        },
+      });
+      return {
+        statusCode: status,
+        success: false,
+        message: "Failed to submit application info",
+        path: reqInfo?.path,
+        data: null,
+      };
+    }
+  } else {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Failed to submit application info",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      statusCode: status,
+      success: false,
+      message: "Failed to submit application info",
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+};
+
+const personalInfoSubmit = async (application: IApplication) => {
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Personal info submitting...",
+      status: "Pending",
+      color: "error",
+    },
+  });
+
+  const cookieinfo = application?.serverInfo?.cookies ?? [];
+  const csrfToken = application?.serverInfo?.csrfToken ?? "";
+  const personalInfoPayload = getPersonalInfoSubmitPayload(
+    application,
+    csrfToken
+  );
+
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const reqInfo = {
+    method: "POST",
+    path: "/personal-info-submit",
+    uri: proxyUrl,
+    cookies: cookieinfo,
+    data: personalInfoPayload,
+  };
+
+  const personalInfoResponse = await makeRequest(
+    reqInfo,
+    application?._id as string
+  );
+
+  const status = personalInfoResponse?.status;
+
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Error | Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+
+  if (status === 302) {
+    const cookie = personalInfoResponse?.headers?.get("set-cookie");
+    const location = personalInfoResponse?.headers?.get("Location");
+
+    const path = getLocationPathname(location as string);
+
+    if (path === "/overview-submit") {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Personal info submitted! | try to submit overview info",
+          status: "Success",
+          color: "success",
+        },
+      });
+
+      return {
+        statusCode: httpStatus.OK,
+        success: true,
+        path: path,
+        message: "Personal info submitted! | try to submit overview info",
+        data: {
+          success: true,
+          cookies: cookie,
+        },
+      };
+    } else {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Failed to submit personal info",
+          status: "Failed",
+          color: "error",
+        },
+      });
+      return {
+        statusCode: status,
+        success: false,
+        message: "Failed to submit personal info",
+        path: reqInfo?.path,
+        data: null,
+      };
+    }
+  } else {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Failed to submit personal info",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      statusCode: status,
+      success: false,
+      message: "Failed to submit personal info",
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+};
+
+const overviewInfoSubmit = async (application: IApplication) => {
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Overview info submitting...",
+      status: "Pending",
+      color: "error",
+    },
+  });
+
+  const cookieinfo = application?.serverInfo?.cookies ?? [];
+  const csrfToken = application?.serverInfo?.csrfToken ?? "";
+  const overviewPayload = getOverviewInfoSubmitPayload(csrfToken);
+
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const reqInfo = {
+    method: "POST",
+    path: "/overview-submit",
+    uri: proxyUrl,
+    cookies: cookieinfo,
+    data: overviewPayload,
+  };
+
+  const personalInfoResponse = await makeRequest(
+    reqInfo,
+    application?._id as string
+  );
+
+  const status = personalInfoResponse?.status;
+
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Error | Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+
+  if (status === 302) {
+    const cookie = personalInfoResponse?.headers?.get("set-cookie");
+    const location = personalInfoResponse?.headers?.get("Location");
+
+    const path = getLocationPathname(location as string);
+
+    if (path === "/payment") {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Overview info submitted! | Payment session started",
+          status: "Success",
+          color: "success",
+        },
+      });
+
+      return {
+        statusCode: httpStatus.OK,
+        success: true,
+        path: path,
+        message: "Overview info submitted! | Payment session started",
+        data: {
+          success: true,
+          cookies: cookie,
+        },
+      };
+    } else {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "Failed to submit overview info",
+          status: "Failed",
+          color: "error",
+        },
+      });
+      return {
+        statusCode: status,
+        success: false,
+        message: "Failed to submit personal info",
+        path: reqInfo?.path,
+        data: null,
+      };
+    }
+  } else {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Failed to submit overview info",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      statusCode: status,
+      success: false,
+      message: "Failed to submit overview info",
+      path: reqInfo?.path,
+      data: null,
+    };
+  }
+};
+
 export const serverService = {
   createNewSession,
   sendLoginOTP,
   vefiryLoginOTP,
   loggedOut,
+  applicationInfoSubmit,
+  personalInfoSubmit,
+  overviewInfoSubmit,
 };

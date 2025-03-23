@@ -21,48 +21,54 @@ export const getOtpVerifyPayload = (otp: string, token: string) => {
   };
 };
 
-// export const getApplicationInfoSubmitPayload = (item) => {
-//   return {
-//     _token: getCSRFToken(),
-//     highcom: item?.center,
-//     ivac_id: item?.ivac,
-//     visa_type: item?.visaType,
-//     webfile_id: item?.info[0]?.web_id,
-//     webfile_id_repeat: item?.info[0]?.web_id,
-//     family_count: item?.info?.length - 1,
-//     visit_purpose: item?.visit_purpose,
-//   };
-// };
+export const getApplicationInfoSubmitPayload = (
+  item: IApplication,
+  token: string
+) => {
+  return {
+    _token: token,
+    highcom: item?.center,
+    ivac_id: item?.ivac,
+    visa_type: item?.visaType,
+    webfile_id: item?.info[0]?.web_id,
+    webfile_id_repeat: item?.info[0]?.web_id,
+    family_count: item?.info?.length - 1,
+    visit_purpose: item?.visit_purpose,
+  };
+};
 
-// export const getPersonalInfoSubmitPayload = (item) => {
-//   const family1 = item?.info[0];
+export const getPersonalInfoSubmitPayload = (
+  item: IApplication,
+  token: string
+) => {
+  const family1 = item?.info[0];
 
-//   const formattedData = {};
+  const formattedData: { [key: string]: string } = {};
 
-//   if (item?.info?.length) {
-//     item?.info?.forEach((member, index) => {
-//       if (index > 0) {
-//         formattedData[`family[${index}][name]`] = member.name;
-//         formattedData[`family[${index}][webfile_no]`] = member.web_id;
-//         formattedData[`family[${index}][again_webfile_no]`] = member.web_id;
-//       }
-//     });
-//   }
+  if (item?.info?.length) {
+    item?.info?.forEach((member, index) => {
+      if (index > 0) {
+        formattedData[`family[${index}][name]`] = member.name;
+        formattedData[`family[${index}][webfile_no]`] = member.web_id;
+        formattedData[`family[${index}][again_webfile_no]`] = member.web_id;
+      }
+    });
+  }
 
-//   return {
-//     _token: getCSRFToken(),
-//     full__name: family1?.name,
-//     email_name: item?.email,
-//     pho_ne: item?.phone,
-//     ...formattedData,
-//   };
-// };
+  return {
+    _token: token,
+    full__name: family1?.name,
+    email_name: item?.email,
+    pho_ne: item?.phone,
+    ...formattedData,
+  };
+};
 
-// export const getOverviewInfoSubmitPayload = (item) => {
-//   return {
-//     _token: getCSRFToken(),
-//   };
-// };
+export const getOverviewInfoSubmitPayload = (token: string) => {
+  return {
+    _token: token,
+  };
+};
 
 // export const getPayOtpSendPayload = (resend) => {
 //   return {

@@ -156,9 +156,106 @@ const loggedOut = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const startProcess = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const applicationResponse = await serverService.applicationInfoSubmit(
+    application
+  );
+
+  if (applicationResponse?.success === false) {
+    sendResponse(res, {
+      statusCode: applicationResponse?.statusCode || 500,
+      success: true,
+      message: applicationResponse?.message,
+      data: {
+        path: applicationResponse?.path,
+        status: applicationResponse?.statusCode,
+      },
+    });
+  } else {
+    await applicationService.updateByPhone(id, {
+      serverInfo: {
+        ...application?.serverInfo,
+        cookies: applicationResponse?.data?.cookies as string[],
+      },
+    });
+
+    const personalInfoResponse = await serverService.personalInfoSubmit({
+      ...application,
+      serverInfo: {
+        ...application?.serverInfo,
+        cookies: applicationResponse?.data?.cookies as string[],
+      },
+    });
+
+    if (personalInfoResponse?.success === false) {
+      sendResponse(res, {
+        statusCode: personalInfoResponse?.statusCode || 500,
+        success: false,
+        message: personalInfoResponse?.message,
+        data: {
+          path: personalInfoResponse?.path,
+          status: personalInfoResponse?.statusCode,
+        },
+      });
+    } else {
+      await applicationService.updateByPhone(id, {
+        serverInfo: {
+          ...application?.serverInfo,
+          cookies: personalInfoResponse?.data?.cookies as string[],
+        },
+      });
+
+      const overviewInfoResponse = await serverService.overviewInfoSubmit({
+        ...application,
+        serverInfo: {
+          ...application?.serverInfo,
+          cookies: personalInfoResponse?.data?.cookies as string[],
+        },
+      });
+
+      if (overviewInfoResponse?.success === false) {
+        sendResponse(res, {
+          statusCode: overviewInfoResponse?.statusCode || 500,
+          success: false,
+          message: overviewInfoResponse?.message,
+          data: {
+            path: overviewInfoResponse?.path,
+            status: overviewInfoResponse?.statusCode,
+          },
+        });
+      } else {
+        await applicationService.updateByPhone(id, {
+          serverInfo: {
+            ...application?.serverInfo,
+            cookies: overviewInfoResponse?.data?.cookies as string[],
+          },
+        });
+
+        sendResponse(res, {
+          statusCode: httpStatus.OK,
+          success: true,
+          message: overviewInfoResponse?.message,
+          data: {
+            path: overviewInfoResponse?.path,
+            status: overviewInfoResponse?.statusCode,
+          },
+        });
+      }
+    }
+  }
+});
+
 export const serverController = {
   verifyLoginOTP,
   sendLoginOTP,
   createNewSession,
   loggedOut,
+  startProcess,
 };
