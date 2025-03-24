@@ -5,6 +5,8 @@ import httpStatus from "http-status";
 import { serverService } from "./server.service";
 import { applicationService } from "../applications/applications.service";
 import ApiError from "../../errorHandelars/ApiError";
+import { reCaptchaService } from "../reCaptcha/reCaptcha.service";
+import { socketIo } from "../../socket";
 
 const createNewSession = catchAsync(async (req: Request, res: Response) => {
   const id = req.body.id;
@@ -23,24 +25,12 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
       statusCode: response?.statusCode || 500,
       success: response?.success || false,
-      message: `Session not created!`,
-      data: {
-        path: response?.path,
-        status: false,
-      },
+      message: response?.message,
+      data: response?.data,
     });
   } else {
-    const { cookies, csrfToken, userImg } = response;
+    const { csrfToken, userImg } = response;
 
-    if (csrfToken && cookies) {
-      console.log("session created successfully");
-      await applicationService.updateByPhone(id, {
-        serverInfo: {
-          csrfToken,
-          cookies,
-        },
-      });
-    }
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -49,6 +39,7 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
         message: userImg ? "User logged in!" : "User not logged in!",
         csrfToken: csrfToken ?? null,
         user: userImg ?? null,
+        action: "create-session",
       },
     });
   }
@@ -186,13 +177,10 @@ const startProcess = catchAsync(async (req: Request, res: Response) => {
       },
     });
 
-    const personalInfoResponse = await serverService.personalInfoSubmit({
-      ...application,
-      serverInfo: {
-        ...application?.serverInfo,
-        cookies: applicationResponse?.data?.cookies as string[],
-      },
-    });
+    const personalInfoResponse = await serverService.personalInfoSubmit(
+      application,
+      applicationResponse?.data?.cookies as string[]
+    );
 
     if (personalInfoResponse?.success === false) {
       sendResponse(res, {
@@ -212,13 +200,10 @@ const startProcess = catchAsync(async (req: Request, res: Response) => {
         },
       });
 
-      const overviewInfoResponse = await serverService.overviewInfoSubmit({
-        ...application,
-        serverInfo: {
-          ...application?.serverInfo,
-          cookies: personalInfoResponse?.data?.cookies as string[],
-        },
-      });
+      const overviewInfoResponse = await serverService.overviewInfoSubmit(
+        application,
+        personalInfoResponse?.data?.cookies as string[]
+      );
 
       if (overviewInfoResponse?.success === false) {
         sendResponse(res, {
@@ -252,10 +237,119 @@ const startProcess = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const sendPaymentOTP = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const resend = req.body.resend;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const response = await serverService.sendPaymentOTP(application, resend);
+  sendResponse(res, {
+    statusCode: response?.statusCode as number,
+    success: response?.success as boolean,
+    message: response?.message,
+    data: {
+      ...response?.data,
+      path: response?.path,
+      status: response?.statusCode,
+    },
+  });
+});
+
+const verifyPaymentOTP = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const otp = req.body.otp;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const response = await serverService.verifyPaymentOTP(application, otp);
+  sendResponse(res, {
+    statusCode: response?.statusCode as number,
+    success: response?.success as boolean,
+    message: response?.message,
+    data: {
+      ...response?.data,
+      path: response?.path,
+      status: response?.statusCode,
+    },
+  });
+});
+
+const getSlotTime = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const response = await serverService.paySlotTime(application);
+  sendResponse(res, {
+    statusCode: response?.statusCode as number,
+    success: response?.success as boolean,
+    message: response?.message,
+    data: {
+      ...response?.data,
+      path: response?.path,
+      status: response?.statusCode,
+    },
+  });
+});
+
+const bookNow = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const hashParam = req.body.hashParam;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const response = await serverService.bookNow(application, hashParam);
+  sendResponse(res, {
+    statusCode: response?.statusCode as number,
+    success: response?.success as boolean,
+    message: response?.message,
+    data: {
+      ...response?.data,
+      path: response?.path,
+      status: response?.statusCode,
+    },
+  });
+});
+
+const getCaptchaToken = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const response = await reCaptchaService.getReCaptchaTokenByAnti();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Recaptcha Created Successfully!",
+    data: response,
+  });
+});
+
 export const serverController = {
   verifyLoginOTP,
   sendLoginOTP,
   createNewSession,
   loggedOut,
   startProcess,
+  sendPaymentOTP,
+  verifyPaymentOTP,
+  getSlotTime,
+  bookNow,
+  getCaptchaToken,
 };

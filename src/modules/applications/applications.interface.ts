@@ -40,6 +40,7 @@ export interface IApplication extends Document {
   pinNumber: string;
   createdAt: string;
   serverInfo: {
+    action?: string;
     cookies: string[];
     csrfToken: string;
   };
