@@ -464,309 +464,6 @@ const vefiryLoginOTP = async (
   }
 };
 
-const sendLoginOTP = async (application: IApplication) => {
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
-  const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const vefiryPayload = mobileVerifyPayload(application, csrfToken) as {
-    mobile_no: string;
-    _token: string;
-  };
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
-
-  const reqInfo = {
-    method: "POST",
-    path: "/mobile-verify",
-    uri: proxyUrl,
-    cookies: cookieinfo,
-    data: vefiryPayload,
-  };
-
-  socketIo.emit("server-logs", {
-    id: application?._id,
-    log: {
-      action: "Mobile number verifying...",
-      status: "Pending",
-      color: "error",
-    },
-  });
-
-  const mobileVerifyResponse = await makeRequest(
-    reqInfo,
-    application?._id as string
-  );
-  const status = mobileVerifyResponse?.status;
-
-  if (retryCodes.includes(status)) {
-    socketIo.emit("server-logs", {
-      id: application?._id,
-      log: {
-        action: `Status:${status} | All attempts failed.`,
-        status: "Failed",
-        color: "error",
-      },
-    });
-    return {
-      success: false,
-      statusCode: status,
-      message: `Error | Status:${status} | All attempts failed.`,
-      data: {
-        success: false,
-        reqPath: reqInfo.path,
-        redirectPath: null,
-      },
-    };
-  }
-
-  if (status === 302) {
-    const cookies = mobileVerifyResponse?.headers.getSetCookie();
-    const location = mobileVerifyResponse?.headers.get("Location");
-    const path = getLocationPathname(location as string);
-
-    if (path === "/login-auth") {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "Mobile number verified!",
-          status: "Success",
-          color: "success",
-        },
-      });
-      await applicationService.updateByPhone(application?._id as string, {
-        serverInfo: {
-          ...application?.serverInfo,
-          cookies,
-        },
-      });
-
-      const authPayload = getAuthVerifyPayload(application, csrfToken);
-      const reqInfo = {
-        method: "POST",
-        path: "/login-auth-submit",
-        uri: proxyUrl,
-        cookies: cookies,
-        data: authPayload,
-      };
-
-      console.log("mobile verify successfully");
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "Authenticating...",
-          status: "Pending",
-          color: "error",
-        },
-      });
-      const authVefityResponse = await makeRequest(
-        reqInfo,
-        application?._id as string
-      );
-      const status = authVefityResponse?.status;
-
-      if (retryCodes.includes(status)) {
-        socketIo.emit("server-logs", {
-          id: application?._id,
-          log: {
-            action: `Status:${status} | All attempts failed.`,
-            status: "Failed",
-            color: "error",
-          },
-        });
-        return {
-          success: false,
-          statusCode: status,
-          message: `Error | Status:${status} | All attempts failed.`,
-          data: {
-            success: false,
-            reqPath: reqInfo.path,
-            redirectPath: null,
-          },
-        };
-      }
-
-      if (status === 302) {
-        const location = authVefityResponse?.headers.get("Location");
-        const path = getLocationPathname(location as string);
-        if (path === "/login-otp") {
-          socketIo.emit("server-logs", {
-            id: application?._id,
-            log: {
-              action: "Authenticated!",
-              status: "Success",
-              color: "success",
-            },
-          });
-          socketIo.emit("server-logs", {
-            id: application?._id,
-            log: {
-              action: "Login OTP Sent!",
-              status: "Success",
-              color: "success",
-            },
-          });
-          console.log("auth verify successfully");
-          const cookieinfo = authVefityResponse?.headers.getSetCookie();
-          return {
-            status,
-            success: true,
-            path,
-            message: "Login OTP Sent Successfully",
-            cookies: cookieinfo,
-          };
-        } else {
-          socketIo.emit("server-logs", {
-            id: application?._id,
-            log: {
-              action: "Authentication Failed! | Password did not match!",
-              status: "Failed",
-              color: "error",
-            },
-          });
-          return {
-            status,
-            success: false,
-            path,
-            message: "Password Verification Failed or Session Expired",
-          };
-        }
-      }
-    } else {
-      return {
-        success: false,
-        statusCode: status,
-        path: "/mobile-verify",
-        data: null,
-      };
-    }
-  }
-};
-
-// const vefiryLoginOTP = async ( application: IApplication, otp: string) => {
-//   const cookieinfo = application?.serverInfo?.cookies ?? [];
-//   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-//   const vefiryPayload = getOtpVerifyPayload(otp, csrfToken);
-
-//   const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
-
-//   const reqInfo = {
-//     method: "POST",
-//     path: "/login-otp-submit",
-//     uri: proxyUrl,
-//     cookies: cookieinfo,
-//     data: vefiryPayload,
-//   };
-
-//   socketIo.emit("server-logs", {
-//     id: application?._id,
-//     log: {
-//       action: "Verifying OTP...",
-//       status: "Pending",
-//       color: "error",
-//     },
-//   });
-
-//   const otpVerifyResponse = await makeRequest(
-//     reqInfo,
-//     application?._id as string
-//   );
-
-//   const status = otpVerifyResponse?.status;
-//   const cookiesInfo = otpVerifyResponse?.headers.getSetCookie();
-
-//   if (retryCodes.includes(status)) {
-//     socketIo.emit("server-logs", {
-//       id: application?._id,
-//       log: {
-//         action: `Error | Status:${status} | All attempts failed.`,
-//         status: "Failed",
-//         color: "error",
-//       },
-//     });
-//     return {
-//       success: false,
-//       statusCode: status,
-//       path: reqInfo?.path,
-//       data: null,
-//     };
-//   }
-
-//   if (status === 302) {
-//     const location = otpVerifyResponse?.headers.get("Location");
-//     const path = getLocationPathname(location as string);
-//     if (path === "/") {
-//       socketIo.emit("server-logs", {
-//         id: application?._id,
-//         log: {
-//           action: "OTP verified! | Creating new session...",
-//           status: "Pending",
-//           color: "error",
-//         },
-//       });
-//       console.log("OTP verify successfully");
-//       const sessionResponse = await createNewSession(
-//         cookiesInfo as string[],
-//         application?._id as string
-//       );
-//       const { cookies, csrfToken, userImg } = sessionResponse;
-//       if (userImg) {
-//         socketIo.emit("server-logs", {
-//           id: application?._id,
-//           log: {
-//             action: "Session created! | User logged in successfully",
-//             status: "Success",
-//             color: "success",
-//           },
-//         });
-
-//         console.log("Login Successfully");
-//         return {
-//           status,
-//           success: true,
-//           message: "Login Successfully",
-//           path,
-//           userImg,
-//           cookies,
-//           csrfToken,
-//         };
-//       } else {
-//         console.log("Session Not Found! Please create new session");
-//         socketIo.emit("server-logs", {
-//           id: application?._id,
-//           log: {
-//             action: "OTP did not match! or Session Not Found!",
-//             status: "Success",
-//             color: "success",
-//           },
-//         });
-
-//         return {
-//           status,
-//           success: false,
-//           message: "OTP did not match! or Session Not Found!",
-//           path,
-//           cookies,
-//           csrfToken,
-//         };
-//       }
-//     } else {
-//       socketIo.emit("server-logs", {
-//         id: application?._id,
-//         log: {
-//           action: "OTP Verification Failed!",
-//           status: "Failed",
-//           color: "error",
-//         },
-//       });
-//       return {
-//         success: false,
-//         statusCode: status,
-//         path: reqInfo?.path,
-//         data: null,
-//       };
-//     }
-//   }
-// };
-
 const loggedOut = async (id: string) => {
   socketIo.emit("server-logs", {
     id,
@@ -1221,28 +918,31 @@ const overviewInfoSubmit = async (
   }
 };
 
-const sendPaymentOTP = async (application: IApplication, resend: number) => {
+const sendPaymentOTP = async (
+  proxyUrl: string,
+  cookieinfo: string[],
+  application: IApplication,
+  resend: number
+) => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
-      action: "Sending payment OTP...",
+      action: "Payment OTP sending...",
       status: "Pending",
       color: "error",
     },
   });
 
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const OtpSendPayload = getPayOtpSendPayload(resend, csrfToken);
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const payOtpSendPayload = getPayOtpSendPayload(resend, csrfToken);
+  csrfToken;
 
   const reqInfo = {
     method: "POST",
     path: "/pay-otp-sent",
     uri: proxyUrl,
     cookies: cookieinfo,
-    data: OtpSendPayload,
+    data: payOtpSendPayload,
   };
 
   const otpSentResponse = await makeRequest(
@@ -1274,6 +974,8 @@ const sendPaymentOTP = async (application: IApplication, resend: number) => {
   }
 
   if (status === 302) {
+    const location = otpSentResponse?.headers?.get("Location");
+    const path = getLocationPathname(location as string);
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
@@ -1282,61 +984,85 @@ const sendPaymentOTP = async (application: IApplication, resend: number) => {
         color: "error",
       },
     });
+    return {
+      success: false,
+      statusCode: httpStatus.OK,
+      message: "Failed to send payment OTP",
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: path,
+      },
+    };
+  }
+
+  const res = await otpSentResponse?.json();
+  const cookie = otpSentResponse?.headers?.getSetCookie();
+
+  if (res?.success && res?.message === "Sms send successfully") {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Payment OTP sent!",
+        status: "Success",
+        color: "success",
+      },
+    });
+
+    await applicationService.updateByPhone(application?._id as string, {
+      serverInfo: {
+        ...application?.serverInfo,
+        action: "otp-verify",
+        cookies: cookie,
+      },
+    });
+
+    socketIo.emit("server-action", {
+      id: application?._id,
+      data: {
+        success: true,
+        action: "otp-verify",
+      },
+    });
 
     return {
-      statusCode: 200,
-      success: false,
-      message: "Failed to send payment OTP",
-      path: reqInfo?.path,
-      data: null,
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Payment OTP sent!",
+      cookies: cookie,
+      data: res,
     };
   } else {
-    const res = await otpSentResponse?.json();
-    if (res?.success && res?.message === "Sms send successfully") {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "Payment OTP sent",
-          status: "Success",
-          color: "success",
-        },
-      });
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: reqInfo?.path,
-        message: "Payment OTP sent",
-        data: {
-          success: true,
-        },
-      };
-    } else {
-      const message = res?.message;
-      const errMessage = res?.message?.error;
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: errMessage
-            ? errMessage
-            : message ?? "Failed to send payment OTP",
-          status: "Failed",
-          color: "error",
-        },
-      });
-      return {
-        statusCode: status,
-        success: false,
-        message: errMessage
+    const message = res?.message;
+    const errMessage = res?.message?.error;
+
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: errMessage
           ? errMessage
           : message ?? "Failed to send payment OTP",
-        path: reqInfo?.path,
-        data: null,
-      };
-    }
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: httpStatus.OK,
+      message: errMessage
+        ? errMessage
+        : message ?? "Failed to send payment OTP",
+      data: res,
+    };
   }
 };
 
-const verifyPaymentOTP = async (application: IApplication, otp: string) => {
+const verifyPaymentOTP = async (
+  proxyUrl: string,
+  cookieinfo: string[],
+  application: IApplication,
+  otp: string
+) => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
@@ -1346,11 +1072,8 @@ const verifyPaymentOTP = async (application: IApplication, otp: string) => {
     },
   });
 
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
   const otpVerifyPayload = getPayOtpVerifyPayload(otp, csrfToken);
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
 
   const reqInfo = {
     method: "POST",
@@ -1366,7 +1089,6 @@ const verifyPaymentOTP = async (application: IApplication, otp: string) => {
   );
 
   const status = otpVerifyResponse?.status;
-  const cookieInfo = otpVerifyResponse?.headers?.getSetCookie();
 
   if (retryCodes.includes(status)) {
     socketIo.emit("server-logs", {
@@ -1390,75 +1112,94 @@ const verifyPaymentOTP = async (application: IApplication, otp: string) => {
   }
 
   if (status === 302) {
+    const location = otpVerifyResponse?.headers?.get("Location");
+    const path = getLocationPathname(location as string);
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to verify payment OTP",
+        action: "Failed to verify OTP",
         status: "Failed",
         color: "error",
       },
     });
+    return {
+      success: false,
+      statusCode: httpStatus.OK,
+      message: "Failed to verify OTP",
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: path,
+      },
+    };
+  }
+
+  const res = await otpVerifyResponse?.json();
+  if (res?.success) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Payment OTP verified",
+        status: "Success",
+        color: "success",
+      },
+    });
+
+    const cookieInfo = otpVerifyResponse?.headers?.getSetCookie();
+    await applicationService.updateByPhone(application?._id as string, {
+      serverInfo: {
+        csrfToken: csrfToken as string,
+        action: "slot-time",
+        cookies: cookieInfo,
+      },
+    });
+
+    socketIo.emit("server-action", {
+      id: application?._id,
+      data: {
+        success: true,
+        action: "slot-time",
+      },
+    });
 
     return {
-      statusCode: 200,
-      success: false,
-      message: "Failed to send payment OTP",
+      statusCode: httpStatus.OK,
+      success: true,
       path: reqInfo?.path,
-      data: null,
+      message: "Payment OTP verified",
+      data: res,
     };
   } else {
-    const res = await otpVerifyResponse?.json();
-    if (res?.success) {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "Payment OTP verified",
-          status: "Success",
-          color: "success",
-        },
-      });
+    const message = res?.message;
+    const errMessage = res?.message?.error;
 
-      await applicationService.updateByPhone(application?._id as string, {
-        serverInfo: {
-          csrfToken: csrfToken as string,
-          cookies: cookieInfo,
-        },
-      });
-
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: reqInfo?.path,
-        message: "Payment OTP verified",
-        data: res,
-      };
-    } else {
-      const message = res?.message;
-      const errMessage = res?.message?.error;
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: errMessage
-            ? errMessage
-            : message ?? "Failed to send payment OTP",
-          status: "Failed",
-          color: "error",
-        },
-      });
-      return {
-        statusCode: status,
-        success: false,
-        message: errMessage
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: errMessage
           ? errMessage
-          : message ?? "Failed to send payment OTP",
-        path: reqInfo?.path,
-        data: null,
-      };
-    }
+          : message ?? "Failed to verify payment OTP",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      statusCode: httpStatus.OK,
+      success: false,
+      message: errMessage
+        ? errMessage
+        : message ?? "Failed to verify payment OTP",
+      data: res,
+    };
   }
 };
 
-const paySlotTime = async (application: IApplication) => {
+const paySlotTime = async (
+  proxyUrl: string,
+  cookieInfo: string[],
+  application: IApplication,
+  date: string
+) => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
@@ -1468,19 +1209,14 @@ const paySlotTime = async (application: IApplication) => {
     },
   });
 
-  const appointment_date = "2025-03-24";
-
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const timeSlotPayload = getTimeSlotPayload(appointment_date, csrfToken);
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const timeSlotPayload = getTimeSlotPayload(date, csrfToken);
 
   const reqInfo = {
     method: "POST",
     path: "/pay-slot-time",
     uri: proxyUrl,
-    cookies: cookieinfo,
+    cookies: cookieInfo,
     data: timeSlotPayload,
   };
 
@@ -1490,9 +1226,6 @@ const paySlotTime = async (application: IApplication) => {
   );
 
   const status = getTimeResponse?.status;
-  const cookieInfo = getTimeResponse?.headers?.getSetCookie();
-
-  console.log(getTimeResponse);
 
   if (retryCodes.includes(status)) {
     socketIo.emit("server-logs", {
@@ -1516,72 +1249,91 @@ const paySlotTime = async (application: IApplication) => {
   }
 
   if (status === 302) {
+    const location = getTimeResponse?.headers?.get("Location");
+    const path = getLocationPathname(location as string);
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to Fetch slot time",
+        action: "Failed to fetch slot time",
         status: "Failed",
         color: "error",
       },
     });
+    return {
+      success: false,
+      statusCode: httpStatus.OK,
+      message: "Failed to fetch slot time",
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: path,
+      },
+    };
+  }
+
+  const res = await getTimeResponse?.json();
+  if (res?.success) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Slot time fetched",
+        status: "Success",
+        color: "success",
+      },
+    });
+
+    const cookies = getTimeResponse?.headers?.getSetCookie();
+    await applicationService.updateByPhone(application?._id as string, {
+      serverInfo: {
+        csrfToken: csrfToken as string,
+        action: "captcha-token",
+        cookies: cookies,
+      },
+    });
+
+    socketIo.emit("server-action", {
+      id: application?._id,
+      data: {
+        success: true,
+        action: "captcha-token",
+      },
+    });
 
     return {
-      statusCode: 200,
-      success: false,
-      message: "Failed to Fetch slot time",
+      statusCode: httpStatus.OK,
+      success: true,
       path: reqInfo?.path,
-      data: null,
+      message: "Slot time fetched",
+      data: res,
     };
   } else {
-    const data = await getTimeResponse?.json();
-    if (data?.success) {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "Slot time fetched",
-          status: "Success",
-          color: "success",
-        },
-      });
-
-      await applicationService.updateByPhone(application?._id as string, {
-        serverInfo: {
-          csrfToken: csrfToken as string,
-          cookies: cookieInfo,
-        },
-      });
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: reqInfo?.path,
-        message: "Slot time fetched",
-        data: data,
-      };
-    } else {
-      const errMessage =
-        typeof data?.message === "string"
-          ? data?.message
-          : data?.message?.error ?? "Filed to get slot time";
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: errMessage,
-          status: "Failed",
-          color: "error",
-        },
-      });
-      return {
-        statusCode: status,
-        success: false,
-        message: errMessage,
-        path: reqInfo?.path,
-        data: null,
-      };
-    }
+    const message = res?.message;
+    const errMessage = res?.message?.error;
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: errMessage
+          ? errMessage
+          : message ?? "Failed to fetch slot time",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      statusCode: httpStatus.OK,
+      success: false,
+      message: errMessage ? errMessage : message ?? "Failed to fetch slot time",
+      data: res,
+    };
   }
 };
 
-const bookNow = async (application: IApplication, hashParam: string) => {
+const bookNow = async (
+  proxyUrl: string,
+  cookieInfo: string[],
+  application: IApplication,
+  hashParam: string
+) => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
@@ -1591,24 +1343,16 @@ const bookNow = async (application: IApplication, hashParam: string) => {
     },
   });
 
-  const appointment_date = "2025-3-24";
+  // const appointment_date = "2025-3-24";
 
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const booknowPayload = getBookSlotPayload(
-    application,
-    appointment_date,
-    hashParam,
-    csrfToken
-  );
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const booknowPayload = getBookSlotPayload(application, hashParam, csrfToken);
 
   const reqInfo = {
     method: "POST",
     path: "/paynow",
     uri: proxyUrl,
-    cookies: cookieinfo,
+    cookies: cookieInfo,
     data: booknowPayload,
   };
 
@@ -1639,70 +1383,132 @@ const bookNow = async (application: IApplication, hashParam: string) => {
       },
     };
   }
+
   if (status === 302) {
+    const location = bookNowResponse?.headers?.get("Location");
+    const path = getLocationPathname(location as string);
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to Booked Slot",
+        action: "Failed to book slot",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: httpStatus.OK,
+      message: "Failed to book slot",
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: path,
+      },
+    };
+  }
+
+  const data = await bookNowResponse?.json();
+  if (data?.success) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Slot Booked Successfully",
+        status: "Success",
+        color: "success",
+      },
+    });
+    return {
+      statusCode: httpStatus.OK,
+      success: true,
+      path: reqInfo?.path,
+      message: "Slot Booked Successfully",
+      data: data,
+    };
+  } else {
+    const errMessage =
+      typeof data?.message === "string"
+        ? data?.message
+        : data?.message?.error ?? "Filed to Book slot";
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: errMessage,
         status: "Failed",
         color: "error",
       },
     });
 
     return {
-      statusCode: 200,
+      statusCode: httpStatus.OK,
       success: false,
-      message: "Failed to Booked Slot",
-      path: reqInfo?.path,
-      data: null,
+      message: errMessage,
+      data: data,
     };
-  } else {
-    const data = await bookNowResponse?.json();
-    if (data?.success) {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "Slot Booked Successfully",
-          status: "Success",
-          color: "success",
-        },
-      });
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: reqInfo?.path,
-        message: "Slot Booked Successfully",
-        data: data,
-      };
-    } else {
-      const errMessage =
-        typeof data?.message === "string"
-          ? data?.message
-          : data?.message?.error ?? "Filed to Book slot";
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: errMessage,
-          status: "Failed",
-          color: "error",
-        },
-      });
-      return {
-        statusCode: status,
-        success: false,
-        message: errMessage,
-        path: reqInfo?.path,
-        data: null,
-      };
-    }
   }
+
+  // if (status === 302) {
+  //   socketIo.emit("server-logs", {
+  //     id: application?._id,
+  //     log: {
+  //       action: "Failed to Booked Slot",
+  //       status: "Failed",
+  //       color: "error",
+  //     },
+  //   });
+
+  //   return {
+  //     statusCode: 200,
+  //     success: false,
+  //     message: "Failed to Booked Slot",
+  //     path: reqInfo?.path,
+  //     data: null,
+  //   };
+  // } else {
+  //   const data = await bookNowResponse?.json();
+  //   if (data?.success) {
+  //     socketIo.emit("server-logs", {
+  //       id: application?._id,
+  //       log: {
+  //         action: "Slot Booked Successfully",
+  //         status: "Success",
+  //         color: "success",
+  //       },
+  //     });
+  //     return {
+  //       statusCode: httpStatus.OK,
+  //       success: true,
+  //       path: reqInfo?.path,
+  //       message: "Slot Booked Successfully",
+  //       data: data,
+  //     };
+  //   } else {
+  //     const errMessage =
+  //       typeof data?.message === "string"
+  //         ? data?.message
+  //         : data?.message?.error ?? "Filed to Book slot";
+  //     socketIo.emit("server-logs", {
+  //       id: application?._id,
+  //       log: {
+  //         action: errMessage,
+  //         status: "Failed",
+  //         color: "error",
+  //       },
+  //     });
+  //     return {
+  //       statusCode: status,
+  //       success: false,
+  //       message: errMessage,
+  //       path: reqInfo?.path,
+  //       data: null,
+  //     };
+  //   }
+  // }
 };
 
 export const serverService = {
   createNewSession,
   mobileVerify,
   authVerify,
-  sendLoginOTP,
   vefiryLoginOTP,
   loggedOut,
   applicationInfoSubmit,

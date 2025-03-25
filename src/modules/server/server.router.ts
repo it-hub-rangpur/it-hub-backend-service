@@ -11,7 +11,7 @@ router
 router.route("/personal-submit").post(serverController.personalInfoSubmit);
 router.route("/overview-submit").post(serverController.overviewInfoSubmit);
 
-router.route("/login-otp-send").post(serverController.sendLoginOTP);
+router.route("/login-otp-send").post(serverController.sendPaymentOTP);
 router.route("/login-otp-verify").post(serverController.verifyLoginOTP);
 router.route("/logged-out").post(serverController.loggedOut);
 

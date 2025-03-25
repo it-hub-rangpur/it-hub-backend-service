@@ -39,12 +39,6 @@ const makeRequest = async (
     return `${cookieName}=${cookieValue}`;
   });
 
-  // const xRequestCookie = requestInfo?.cookies[0]?.split(";")[0]?.split("=")[1];
-
-  // if (requestCookie) {
-  //   headers.set("Cookie", requestCookie.join("; "));
-  // }
-
   headers.set("Cookie", requestCookie?.join("; "));
   const htmlResponse = await fetch(targetUrl + requestInfo?.path, {
     dispatcher: client,
