@@ -8,6 +8,16 @@ import ApiError from "../../errorHandelars/ApiError";
 import { reCaptchaService } from "../reCaptcha/reCaptcha.service";
 import { socketIo } from "../../socket";
 
+const proxyInfo = {
+  protocol: "http",
+  host: "103.104.143.145",
+  port: 8927,
+  auth: {
+    username: "user272565",
+    password: "uw7eg9",
+  },
+};
+
 const createNewSession = catchAsync(async (req: Request, res: Response) => {
   const id = req.body.id;
   const application = await applicationService.getOne(id);
@@ -19,7 +29,13 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
   const serverInfo = application?.serverInfo;
   const cookiesData = serverInfo?.cookies;
 
-  const response = await serverService.createNewSession(cookiesData ?? [], id);
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const response = await serverService.createNewSession(
+    proxyUrl,
+    cookiesData ?? [],
+    id
+  );
 
   if (response?.success === false) {
     sendResponse(res, {
@@ -29,7 +45,7 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
       data: response?.data,
     });
   } else {
-    const { csrfToken, userImg } = response;
+    const { csrfToken, userImg, redirectPath, requestPath } = response;
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -38,9 +54,226 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
       data: {
         message: userImg ? "User logged in!" : "User not logged in!",
         csrfToken: csrfToken ?? null,
-        user: userImg ?? null,
-        action: "create-session",
+        userLogin: userImg ? true : false,
+        requestPath,
+        redirectPath,
       },
+    });
+  }
+});
+
+const mobileVerify = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const serverInfo = application?.serverInfo;
+  const cookiesData = serverInfo?.cookies;
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const response = await serverService.mobileVerify(
+    proxyUrl,
+    cookiesData ?? [],
+    application
+  );
+
+  if (response?.success === false) {
+    sendResponse(res, {
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: response?.message,
+      data: response?.data,
+    });
+  } else {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: response?.message,
+      data: response?.data,
+    });
+  }
+});
+
+const authVerify = catchAsync(async (req: Request, res: Response) => {
+  const id = req.body.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const serverInfo = application?.serverInfo;
+  const cookiesData = serverInfo?.cookies;
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const response = await serverService.authVerify(
+    proxyUrl,
+    cookiesData ?? [],
+    application
+  );
+
+  if (response?.success === false) {
+    sendResponse(res, {
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: response?.message,
+      data: response?.data,
+    });
+  } else {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: response?.message,
+      data: response?.data,
+    });
+  }
+});
+
+const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
+  const id = req?.body?.id;
+  const otp = req?.body?.otp;
+
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const serverInfo = application?.serverInfo;
+  const cookiesData = serverInfo?.cookies;
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const response = await serverService.vefiryLoginOTP(
+    proxyUrl,
+    cookiesData ?? [],
+    application,
+    otp
+  );
+
+  if (response?.success === false) {
+    sendResponse(res, {
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: response?.message,
+      data: response?.data,
+    });
+  } else {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: response?.message,
+      data: response?.data,
+    });
+  }
+});
+
+const applicationInfoSubmit = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = req?.body?.id;
+
+    const application = await applicationService.getOne(id);
+
+    if (!application?._id || application?.status) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+    }
+
+    const serverInfo = application?.serverInfo;
+    const cookiesData = serverInfo?.cookies;
+    const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+    const response = await serverService.applicationInfoSubmit(
+      proxyUrl,
+      cookiesData ?? [],
+      application
+    );
+
+    if (response?.success === false) {
+      sendResponse(res, {
+        statusCode: response?.statusCode || 500,
+        success: response?.success || false,
+        message: response?.message,
+        data: response?.data,
+      });
+    } else {
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: response?.message,
+        data: response?.data,
+      });
+    }
+  }
+);
+
+const personalInfoSubmit = catchAsync(async (req: Request, res: Response) => {
+  const id = req?.body?.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const serverInfo = application?.serverInfo;
+  const cookiesData = serverInfo?.cookies;
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const response = await serverService.personalInfoSubmit(
+    proxyUrl,
+    cookiesData ?? [],
+    application
+  );
+
+  if (response?.success === false) {
+    sendResponse(res, {
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: response?.message,
+      data: response?.data,
+    });
+  } else {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: response?.message,
+      data: response?.data,
+    });
+  }
+});
+
+const overviewInfoSubmit = catchAsync(async (req: Request, res: Response) => {
+  const id = req?.body?.id;
+  const application = await applicationService.getOne(id);
+
+  if (!application?._id || application?.status) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+  }
+
+  const serverInfo = application?.serverInfo;
+  const cookiesData = serverInfo?.cookies;
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+
+  const response = await serverService.overviewInfoSubmit(
+    proxyUrl,
+    cookiesData ?? [],
+    application
+  );
+
+  if (response?.success === false) {
+    sendResponse(res, {
+      statusCode: response?.statusCode || 500,
+      success: response?.success || false,
+      message: response?.message,
+      data: response?.data,
+    });
+  } else {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: response?.message,
+      data: response?.data,
     });
   }
 });
@@ -84,46 +317,62 @@ const sendLoginOTP = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
-const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
-  const id = req.body.id;
-  const otp = req.body.otp;
-  const application = await applicationService.getOne(id);
+// const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
+//   const id = req.body.id;
 
-  if (!application?._id || application?.status) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
-  }
+//   await new Promise((resolve) => setTimeout(resolve, 3000));
+//   socketIo.emit("server-action", {
+//     id,
+//     data: {
+//       success: true,
+//       action: "create-session",
+//     },
+//   });
 
-  const response = await serverService.vefiryLoginOTP(application, otp);
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "OTP Verify Successfully!",
+//     // data: application,
+//   });
+//   // const otp = req.body.otp;
+//   // const application = await applicationService.getOne(id);
 
-  if (response?.success === false) {
-    sendResponse(res, {
-      statusCode: response?.statusCode || 500,
-      success: true,
-      message: response?.message,
-      data: {
-        path: response?.path,
-        status: response?.status,
-      },
-    });
-  } else {
-    await applicationService.updateByPhone(id, {
-      serverInfo: {
-        csrfToken: response?.csrfToken as string,
-        cookies: response?.cookies as string[],
-      },
-    });
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: response?.message,
-      data: {
-        message: response?.userImg ? "User logged in!" : "User not logged in!",
-        csrfToken: response?.csrfToken,
-        user: response?.userImg ?? null,
-      },
-    });
-  }
-});
+//   // if (!application?._id || application?.status) {
+//   //   throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
+//   // }
+
+//   // const response = await serverService.vefiryLoginOTP(application, otp);
+
+//   // if (response?.success === false) {
+//   //   sendResponse(res, {
+//   //     statusCode: response?.statusCode || 500,
+//   //     success: true,
+//   //     message: response?.message,
+//   //     data: {
+//   //       path: response?.path,
+//   //       status: response?.status,
+//   //     },
+//   //   });
+//   // } else {
+//   //   await applicationService.updateByPhone(id, {
+//   //     serverInfo: {
+//   //       csrfToken: response?.csrfToken as string,
+//   //       cookies: response?.cookies as string[],
+//   //     },
+//   //   });
+//   //   sendResponse(res, {
+//   //     statusCode: httpStatus.OK,
+//   //     success: true,
+//   //     message: response?.message,
+//   //     data: {
+//   //       message: response?.userImg ? "User logged in!" : "User not logged in!",
+//   //       csrfToken: response?.csrfToken,
+//   //       user: response?.userImg ?? null,
+//   //     },
+//   //   });
+//   // }
+// });
 
 const loggedOut = catchAsync(async (req: Request, res: Response) => {
   const id = req.body.id;
@@ -145,96 +394,6 @@ const loggedOut = catchAsync(async (req: Request, res: Response) => {
       user: null,
     },
   });
-});
-
-const startProcess = catchAsync(async (req: Request, res: Response) => {
-  const id = req.body.id;
-  const application = await applicationService.getOne(id);
-
-  if (!application?._id || application?.status) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
-  }
-
-  const applicationResponse = await serverService.applicationInfoSubmit(
-    application
-  );
-
-  if (applicationResponse?.success === false) {
-    sendResponse(res, {
-      statusCode: applicationResponse?.statusCode || 500,
-      success: true,
-      message: applicationResponse?.message,
-      data: {
-        path: applicationResponse?.path,
-        status: applicationResponse?.statusCode,
-      },
-    });
-  } else {
-    await applicationService.updateByPhone(id, {
-      serverInfo: {
-        ...application?.serverInfo,
-        cookies: applicationResponse?.data?.cookies as string[],
-      },
-    });
-
-    const personalInfoResponse = await serverService.personalInfoSubmit(
-      application,
-      applicationResponse?.data?.cookies as string[]
-    );
-
-    if (personalInfoResponse?.success === false) {
-      sendResponse(res, {
-        statusCode: personalInfoResponse?.statusCode || 500,
-        success: false,
-        message: personalInfoResponse?.message,
-        data: {
-          path: personalInfoResponse?.path,
-          status: personalInfoResponse?.statusCode,
-        },
-      });
-    } else {
-      await applicationService.updateByPhone(id, {
-        serverInfo: {
-          ...application?.serverInfo,
-          cookies: personalInfoResponse?.data?.cookies as string[],
-        },
-      });
-
-      const overviewInfoResponse = await serverService.overviewInfoSubmit(
-        application,
-        personalInfoResponse?.data?.cookies as string[]
-      );
-
-      if (overviewInfoResponse?.success === false) {
-        sendResponse(res, {
-          statusCode: overviewInfoResponse?.statusCode || 500,
-          success: false,
-          message: overviewInfoResponse?.message,
-          data: {
-            path: overviewInfoResponse?.path,
-            status: overviewInfoResponse?.statusCode,
-          },
-        });
-      } else {
-        await applicationService.updateByPhone(id, {
-          serverInfo: {
-            ...application?.serverInfo,
-            cookies: overviewInfoResponse?.data?.cookies as string[],
-          },
-        });
-
-        sendResponse(res, {
-          statusCode: httpStatus.OK,
-          success: true,
-          message: overviewInfoResponse?.message,
-          data: {
-            path: overviewInfoResponse?.path,
-            status: overviewInfoResponse?.statusCode,
-          },
-        });
-      }
-    }
-  }
 });
 
 const sendPaymentOTP = catchAsync(async (req: Request, res: Response) => {
@@ -342,11 +501,15 @@ const getCaptchaToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const serverController = {
+  createNewSession,
+  mobileVerify,
+  authVerify,
+  applicationInfoSubmit,
+  personalInfoSubmit,
+  overviewInfoSubmit,
   verifyLoginOTP,
   sendLoginOTP,
-  createNewSession,
   loggedOut,
-  startProcess,
   sendPaymentOTP,
   verifyPaymentOTP,
   getSlotTime,

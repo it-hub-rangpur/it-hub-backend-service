@@ -194,6 +194,11 @@ const getReadyApplications = async (userId: string) => {
       autoPayment: item?.autoPayment,
       accountNumber: item?.accountNumber,
       pinNumber: item?.pinNumber,
+      serverInfo: {
+        action: item?.serverInfo?.action,
+        csrfToken: item?.serverInfo?.csrfToken,
+        isLoggedIn: false,
+      },
     };
   });
   return readyData;

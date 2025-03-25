@@ -27,9 +27,11 @@ const proxyInfo = {
   },
 };
 
-const createNewSession = async (cookieinfo: string[], id: string) => {
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
-
+const createNewSession = async (
+  proxyUrl: string,
+  cookieinfo: string[],
+  id: string
+) => {
   const reqInfo = {
     method: "GET",
     path: "/",
@@ -53,7 +55,7 @@ const createNewSession = async (cookieinfo: string[], id: string) => {
     socketIo.emit("server-logs", {
       id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -87,9 +89,17 @@ const createNewSession = async (cookieinfo: string[], id: string) => {
 
   await applicationService.updateByPhone(id, {
     serverInfo: {
-      action: "session created",
+      action: userImg ? "application-info" : "mobile-verify",
       csrfToken,
       cookies,
+    },
+  });
+
+  socketIo.emit("server-action", {
+    id,
+    data: {
+      success: true,
+      action: userImg ? "application-info" : "mobile-verify",
     },
   });
 
@@ -103,16 +113,12 @@ const createNewSession = async (cookieinfo: string[], id: string) => {
 };
 
 const mobileVerify = async (
-  application: IApplication,
-  cookieinfo: string[]
+  proxyUrl: string,
+  cookieinfo: string[],
+  application: IApplication
 ) => {
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const vefiryPayload = mobileVerifyPayload(application, csrfToken) as {
-    mobile_no: string;
-    _token: string;
-  };
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const vefiryPayload = mobileVerifyPayload(application, csrfToken);
 
   const reqInfo = {
     method: "POST",
@@ -141,14 +147,14 @@ const mobileVerify = async (
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
     });
     return {
       success: false,
-      statusCode: httpStatus.OK,
+      statusCode: status,
       message: `Error | Status:${status} | All attempts failed.`,
       data: {
         success: false,
@@ -176,7 +182,7 @@ const mobileVerify = async (
       await applicationService.updateByPhone(application?._id as string, {
         serverInfo: {
           ...application?.serverInfo,
-          action: "mobile-verify",
+          action: "password-verify",
           cookies,
         },
       });
@@ -185,7 +191,7 @@ const mobileVerify = async (
         id: application?._id,
         data: {
           success: true,
-          action: "mobile-verify",
+          action: "password-verify",
         },
       });
 
@@ -196,7 +202,7 @@ const mobileVerify = async (
         cookies,
         data: {
           success: true,
-          reqPath: reqInfo.path,
+          requestPath: reqInfo.path,
           redirectPath: path,
         },
       };
@@ -204,21 +210,23 @@ const mobileVerify = async (
       return {
         success: false,
         statusCode: status,
-        path: "/mobile-verify",
-        data: null,
+        data: {
+          success: false,
+          requestPath: reqInfo.path,
+          redirectPath: path,
+        },
       };
     }
   }
 };
 
-const authVerify = async (application: IApplication, cookieInfo: string[]) => {
+const authVerify = async (
+  proxyUrl: string,
+  cookieInfo: string[],
+  application: IApplication
+) => {
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const authPayload = mobileVerifyPayload(application, csrfToken) as {
-    mobile_no: string;
-    _token: string;
-  };
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const authPayload = getAuthVerifyPayload(application, csrfToken);
 
   const reqInfo = {
     method: "POST",
@@ -231,7 +239,7 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
-      action: "Authenticating...",
+      action: "Password verifying...",
       status: "Pending",
       color: "error",
     },
@@ -246,14 +254,14 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
     });
     return {
       success: false,
-      statusCode: httpStatus.OK,
+      statusCode: status,
       message: `Error | Status:${status} | All attempts failed.`,
       data: {
         success: false,
@@ -262,7 +270,6 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
       },
     };
   }
-
   if (status === 302) {
     const location = authVefityResponse?.headers.get("Location");
     const path = getLocationPathname(location as string);
@@ -272,7 +279,7 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Authenticated!",
+          action: "Password verified!",
           status: "Success",
           color: "success",
         },
@@ -289,7 +296,7 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
       await applicationService.updateByPhone(application?._id as string, {
         serverInfo: {
           ...application?.serverInfo,
-          action: "password-verify",
+          action: "login-otp-verify",
           cookies,
         },
       });
@@ -298,7 +305,7 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
         id: application?._id,
         data: {
           success: true,
-          action: "password-verify",
+          action: "login-otp-verify",
         },
       });
 
@@ -329,7 +336,7 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
         message: "Authentication Failed! | Password did not match!",
         data: {
           success: false,
-          reqPath: reqInfo.path,
+          requestPath: reqInfo.path,
           redirectPath: path,
         },
       };
@@ -337,124 +344,125 @@ const authVerify = async (application: IApplication, cookieInfo: string[]) => {
   }
 };
 
-// const vefiryLoginOTP = async (application: IApplication, otp: string) => {
-//   const cookieinfo = application?.serverInfo?.cookies ?? [];
-//   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-//   const vefiryPayload = getOtpVerifyPayload(otp, csrfToken);
+const vefiryLoginOTP = async (
+  proxyUrl: string,
+  cookieInfo: string[],
+  application: IApplication,
+  otp: string
+) => {
+  const csrfToken = application?.serverInfo?.csrfToken ?? "";
+  const vefiryPayload = getOtpVerifyPayload(otp, csrfToken);
 
-//   const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const reqInfo = {
+    method: "POST",
+    path: "/login-otp-submit",
+    uri: proxyUrl,
+    cookies: cookieInfo,
+    data: vefiryPayload,
+  };
 
-//   const reqInfo = {
-//     method: "POST",
-//     path: "/login-otp-submit",
-//     uri: proxyUrl,
-//     cookies: cookieinfo,
-//     data: vefiryPayload,
-//   };
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Verifying OTP...",
+      status: "Pending",
+      color: "error",
+    },
+  });
 
-//   socketIo.emit("server-logs", {
-//     id: application?._id,
-//     log: {
-//       action: "Verifying OTP...",
-//       status: "Pending",
-//       color: "error",
-//     },
-//   });
+  const otpVerifyResponse = await makeRequest(
+    reqInfo,
+    application?._id as string
+  );
 
-//   const otpVerifyResponse = await makeRequest(
-//     reqInfo,
-//     application?._id as string
-//   );
+  const status = otpVerifyResponse?.status;
 
-//   const status = otpVerifyResponse?.status;
+  if (retryCodes.includes(status)) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Status:${status} | All attempts failed.`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    return {
+      success: false,
+      statusCode: status,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
+    };
+  }
 
-//   if (retryCodes.includes(status)) {
-//     socketIo.emit("server-logs", {
-//       id: application?._id,
-//       log: {
-//         action: `Error | Status:${status} | All attempts failed.`,
-//         status: "Failed",
-//         color: "error",
-//       },
-//     });
+  if (status === 302) {
+    const cookiesInfo = otpVerifyResponse?.headers.getSetCookie();
+    const location = otpVerifyResponse?.headers.get("Location");
+    const path = getLocationPathname(location as string);
 
-//     return {
-//       success: false,
-//       statusCode: httpStatus.OK,
-//       message: `Error | Status:${status} | All attempts failed.`,
-//       data: {
-//         success: false,
-//         reqPath: reqInfo.path,
-//         redirectPath: null,
-//       },
-//     };
-//   }
+    if (path === "/") {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "OTP verified!",
+          status: "Success",
+          color: "success",
+        },
+      });
 
-//   if (status === 302) {
-//     const cookiesInfo = otpVerifyResponse?.headers.getSetCookie();
-//     const location = otpVerifyResponse?.headers.get("Location");
-//     const path = getLocationPathname(location as string);
+      await applicationService.updateByPhone(application?._id as string, {
+        serverInfo: {
+          ...application?.serverInfo,
+          action: "create-session",
+          cookies: cookiesInfo,
+        },
+      });
 
-//     if (path === "/") {
-//       socketIo.emit("server-logs", {
-//         id: application?._id,
-//         log: {
-//           action: "OTP verified!",
-//           status: "Pending",
-//           color: "error",
-//         },
-//       });
+      socketIo.emit("server-action", {
+        id: application?._id,
+        data: {
+          success: true,
+          action: "create-session",
+        },
+      });
 
-//       await applicationService.updateByPhone(application?._id as string, {
-//         serverInfo: {
-//           ...application?.serverInfo,
-//           action: "login-otp-verify",
-//           cookies: cookiesInfo,
-//         },
-//       });
+      return {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "OTP verified successfully",
+        cookies: cookiesInfo,
+        data: {
+          success: true,
+          reqPath: reqInfo.path,
+          redirectPath: path,
+        },
+      };
+    } else {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: "OTP Verification Failed!",
+          status: "Failed",
+          color: "error",
+        },
+      });
 
-//       socketIo.emit("server-action", {
-//         id: application?._id,
-//         data: {
-//           success: true,
-//           action: "login-otp-verify",
-//         },
-//       });
-
-//       return {
-//         success: true,
-//         statusCode: httpStatus.OK,
-//         message: "OTP verified successfully",
-//         cookies: cookiesInfo,
-//         data: {
-//           success: true,
-//           reqPath: reqInfo.path,
-//           redirectPath: path,
-//         },
-//       };
-//     } else {
-//       socketIo.emit("server-logs", {
-//         id: application?._id,
-//         log: {
-//           action: "OTP Verification Failed!",
-//           status: "Failed",
-//           color: "error",
-//         },
-//       });
-
-//       return {
-//         success: false,
-//         statusCode: httpStatus.OK,
-//         message: "OTP Verification Failed!",
-//         data: {
-//           success: false,
-//           reqPath: reqInfo.path,
-//           redirectPath: path,
-//         },
-//       };
-//     }
-//   }
-// };
+      return {
+        success: false,
+        statusCode: httpStatus.OK,
+        message: "OTP Verification Failed!",
+        data: {
+          success: false,
+          reqPath: reqInfo.path,
+          redirectPath: path,
+        },
+      };
+    }
+  }
+};
 
 const sendLoginOTP = async (application: IApplication) => {
   const cookieinfo = application?.serverInfo?.cookies ?? [];
@@ -493,7 +501,7 @@ const sendLoginOTP = async (application: IApplication) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -501,8 +509,12 @@ const sendLoginOTP = async (application: IApplication) => {
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
@@ -555,7 +567,7 @@ const sendLoginOTP = async (application: IApplication) => {
         socketIo.emit("server-logs", {
           id: application?._id,
           log: {
-            action: `Error | Status:${status} | All attempts failed.`,
+            action: `Status:${status} | All attempts failed.`,
             status: "Failed",
             color: "error",
           },
@@ -563,8 +575,12 @@ const sendLoginOTP = async (application: IApplication) => {
         return {
           success: false,
           statusCode: status,
-          path: reqInfo?.path,
-          data: null,
+          message: `Error | Status:${status} | All attempts failed.`,
+          data: {
+            success: false,
+            reqPath: reqInfo.path,
+            redirectPath: null,
+          },
         };
       }
 
@@ -625,131 +641,131 @@ const sendLoginOTP = async (application: IApplication) => {
   }
 };
 
-const vefiryLoginOTP = async (application: IApplication, otp: string) => {
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
-  const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const vefiryPayload = getOtpVerifyPayload(otp, csrfToken);
+// const vefiryLoginOTP = async ( application: IApplication, otp: string) => {
+//   const cookieinfo = application?.serverInfo?.cookies ?? [];
+//   const csrfToken = application?.serverInfo?.csrfToken ?? "";
+//   const vefiryPayload = getOtpVerifyPayload(otp, csrfToken);
 
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+//   const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
 
-  const reqInfo = {
-    method: "POST",
-    path: "/login-otp-submit",
-    uri: proxyUrl,
-    cookies: cookieinfo,
-    data: vefiryPayload,
-  };
+//   const reqInfo = {
+//     method: "POST",
+//     path: "/login-otp-submit",
+//     uri: proxyUrl,
+//     cookies: cookieinfo,
+//     data: vefiryPayload,
+//   };
 
-  socketIo.emit("server-logs", {
-    id: application?._id,
-    log: {
-      action: "Verifying OTP...",
-      status: "Pending",
-      color: "error",
-    },
-  });
+//   socketIo.emit("server-logs", {
+//     id: application?._id,
+//     log: {
+//       action: "Verifying OTP...",
+//       status: "Pending",
+//       color: "error",
+//     },
+//   });
 
-  const otpVerifyResponse = await makeRequest(
-    reqInfo,
-    application?._id as string
-  );
+//   const otpVerifyResponse = await makeRequest(
+//     reqInfo,
+//     application?._id as string
+//   );
 
-  const status = otpVerifyResponse?.status;
-  const cookiesInfo = otpVerifyResponse?.headers.getSetCookie();
+//   const status = otpVerifyResponse?.status;
+//   const cookiesInfo = otpVerifyResponse?.headers.getSetCookie();
 
-  if (retryCodes.includes(status)) {
-    socketIo.emit("server-logs", {
-      id: application?._id,
-      log: {
-        action: `Error | Status:${status} | All attempts failed.`,
-        status: "Failed",
-        color: "error",
-      },
-    });
-    return {
-      success: false,
-      statusCode: status,
-      path: reqInfo?.path,
-      data: null,
-    };
-  }
+//   if (retryCodes.includes(status)) {
+//     socketIo.emit("server-logs", {
+//       id: application?._id,
+//       log: {
+//         action: `Error | Status:${status} | All attempts failed.`,
+//         status: "Failed",
+//         color: "error",
+//       },
+//     });
+//     return {
+//       success: false,
+//       statusCode: status,
+//       path: reqInfo?.path,
+//       data: null,
+//     };
+//   }
 
-  if (status === 302) {
-    const location = otpVerifyResponse?.headers.get("Location");
-    const path = getLocationPathname(location as string);
-    if (path === "/") {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "OTP verified! | Creating new session...",
-          status: "Pending",
-          color: "error",
-        },
-      });
-      console.log("OTP verify successfully");
-      const sessionResponse = await createNewSession(
-        cookiesInfo as string[],
-        application?._id as string
-      );
-      const { cookies, csrfToken, userImg } = sessionResponse;
-      if (userImg) {
-        socketIo.emit("server-logs", {
-          id: application?._id,
-          log: {
-            action: "Session created! | User logged in successfully",
-            status: "Success",
-            color: "success",
-          },
-        });
+//   if (status === 302) {
+//     const location = otpVerifyResponse?.headers.get("Location");
+//     const path = getLocationPathname(location as string);
+//     if (path === "/") {
+//       socketIo.emit("server-logs", {
+//         id: application?._id,
+//         log: {
+//           action: "OTP verified! | Creating new session...",
+//           status: "Pending",
+//           color: "error",
+//         },
+//       });
+//       console.log("OTP verify successfully");
+//       const sessionResponse = await createNewSession(
+//         cookiesInfo as string[],
+//         application?._id as string
+//       );
+//       const { cookies, csrfToken, userImg } = sessionResponse;
+//       if (userImg) {
+//         socketIo.emit("server-logs", {
+//           id: application?._id,
+//           log: {
+//             action: "Session created! | User logged in successfully",
+//             status: "Success",
+//             color: "success",
+//           },
+//         });
 
-        console.log("Login Successfully");
-        return {
-          status,
-          success: true,
-          message: "Login Successfully",
-          path,
-          userImg,
-          cookies,
-          csrfToken,
-        };
-      } else {
-        console.log("Session Not Found! Please create new session");
-        socketIo.emit("server-logs", {
-          id: application?._id,
-          log: {
-            action: "OTP did not match! or Session Not Found!",
-            status: "Success",
-            color: "success",
-          },
-        });
+//         console.log("Login Successfully");
+//         return {
+//           status,
+//           success: true,
+//           message: "Login Successfully",
+//           path,
+//           userImg,
+//           cookies,
+//           csrfToken,
+//         };
+//       } else {
+//         console.log("Session Not Found! Please create new session");
+//         socketIo.emit("server-logs", {
+//           id: application?._id,
+//           log: {
+//             action: "OTP did not match! or Session Not Found!",
+//             status: "Success",
+//             color: "success",
+//           },
+//         });
 
-        return {
-          status,
-          success: false,
-          message: "OTP did not match! or Session Not Found!",
-          path,
-          cookies,
-          csrfToken,
-        };
-      }
-    } else {
-      socketIo.emit("server-logs", {
-        id: application?._id,
-        log: {
-          action: "OTP Verification Failed!",
-          status: "Failed",
-          color: "error",
-        },
-      });
-      return {
-        success: false,
-        statusCode: status,
-        path: reqInfo?.path,
-        data: null,
-      };
-    }
-  }
-};
+//         return {
+//           status,
+//           success: false,
+//           message: "OTP did not match! or Session Not Found!",
+//           path,
+//           cookies,
+//           csrfToken,
+//         };
+//       }
+//     } else {
+//       socketIo.emit("server-logs", {
+//         id: application?._id,
+//         log: {
+//           action: "OTP Verification Failed!",
+//           status: "Failed",
+//           color: "error",
+//         },
+//       });
+//       return {
+//         success: false,
+//         statusCode: status,
+//         path: reqInfo?.path,
+//         data: null,
+//       };
+//     }
+//   }
+// };
 
 const loggedOut = async (id: string) => {
   socketIo.emit("server-logs", {
@@ -786,7 +802,11 @@ const loggedOut = async (id: string) => {
   }
 };
 
-const applicationInfoSubmit = async (application: IApplication) => {
+const applicationInfoSubmit = async (
+  proxyUrl: string,
+  cookieinfo: string[],
+  application: IApplication
+) => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
@@ -796,14 +816,11 @@ const applicationInfoSubmit = async (application: IApplication) => {
     },
   });
 
-  const cookieinfo = application?.serverInfo?.cookies ?? [];
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
   const appplicationInfoPayload = getApplicationInfoSubmitPayload(
     application,
     csrfToken
   );
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
 
   const reqInfo = {
     method: "POST",
@@ -824,7 +841,7 @@ const applicationInfoSubmit = async (application: IApplication) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -832,8 +849,12 @@ const applicationInfoSubmit = async (application: IApplication) => {
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
@@ -842,25 +863,41 @@ const applicationInfoSubmit = async (application: IApplication) => {
     const location = applicationInfoResponse?.headers?.get("Location");
 
     const path = getLocationPathname(location as string);
-
     if (path === "/personal-info") {
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Application info submitted! | try to submit personal info",
+          action: "Application info submitted!",
           status: "Success",
           color: "success",
         },
       });
 
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: path,
-        message: "Application info submitted! | try to submit personal info",
+      await applicationService.updateByPhone(application?._id as string, {
+        serverInfo: {
+          ...application?.serverInfo,
+          action: "personal-info",
+          cookies: cookie,
+        },
+      });
+
+      socketIo.emit("server-action", {
+        id: application?._id,
         data: {
           success: true,
-          cookies: cookie,
+          action: "personal-info",
+        },
+      });
+
+      return {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Application info submitted!",
+        cookies: cookie,
+        data: {
+          success: true,
+          reqPath: reqInfo.path,
+          redirectPath: path,
         },
       };
     } else {
@@ -873,11 +910,14 @@ const applicationInfoSubmit = async (application: IApplication) => {
         },
       });
       return {
-        statusCode: 200,
         success: false,
+        statusCode: httpStatus.OK,
         message: "Failed to submit application info",
-        path: path,
-        data: null,
+        data: {
+          success: false,
+          reqPath: reqInfo.path,
+          redirectPath: path,
+        },
       };
     }
   } else {
@@ -890,18 +930,22 @@ const applicationInfoSubmit = async (application: IApplication) => {
       },
     });
     return {
-      statusCode: status,
       success: false,
+      statusCode: httpStatus.OK,
       message: "Failed to submit application info",
-      path: reqInfo?.path,
-      data: null,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: "",
+      },
     };
   }
 };
 
 const personalInfoSubmit = async (
-  application: IApplication,
-  reqCookie: string[]
+  proxyUrl: string,
+  cookieinfo: string[],
+  application: IApplication
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -912,17 +956,11 @@ const personalInfoSubmit = async (
     },
   });
 
-  const cookieinfo = reqCookie;
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
   const personalInfoPayload = getPersonalInfoSubmitPayload(
     application,
     csrfToken
   );
-
-  console.log("personalInfoPayload", personalInfoPayload);
-  console.log("cookieinfo", cookieinfo);
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
 
   const reqInfo = {
     method: "POST",
@@ -943,7 +981,7 @@ const personalInfoSubmit = async (
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -951,8 +989,12 @@ const personalInfoSubmit = async (
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
@@ -966,20 +1008,37 @@ const personalInfoSubmit = async (
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Personal info submitted! | try to submit overview info",
+          action: "Personal info submitted!",
           status: "Success",
           color: "success",
         },
       });
 
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: path,
-        message: "Personal info submitted! | try to submit overview info",
+      await applicationService.updateByPhone(application?._id as string, {
+        serverInfo: {
+          ...application?.serverInfo,
+          action: "overview-info",
+          cookies: cookie,
+        },
+      });
+
+      socketIo.emit("server-action", {
+        id: application?._id,
         data: {
           success: true,
-          cookies: cookie,
+          action: "overview-info",
+        },
+      });
+
+      return {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Personal info submitted!",
+        cookies: cookie,
+        data: {
+          success: true,
+          reqPath: reqInfo.path,
+          redirectPath: path,
         },
       };
     } else {
@@ -992,35 +1051,42 @@ const personalInfoSubmit = async (
         },
       });
       return {
-        statusCode: status,
         success: false,
+        statusCode: httpStatus.OK,
         message: "Failed to submit personal info",
-        path: reqInfo?.path,
-        data: null,
+        data: {
+          success: false,
+          reqPath: reqInfo.path,
+          redirectPath: path,
+        },
       };
     }
   } else {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to submit personal info",
+        action: "Failed to submit application info",
         status: "Failed",
         color: "error",
       },
     });
     return {
-      statusCode: status,
       success: false,
-      message: "Failed to submit personal info",
-      path: reqInfo?.path,
-      data: null,
+      statusCode: httpStatus.OK,
+      message: "Failed to submit application info",
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: "",
+      },
     };
   }
 };
 
 const overviewInfoSubmit = async (
-  application: IApplication,
-  cookieInfo: string[]
+  proxyUrl: string,
+  cookieinfo: string[],
+  application: IApplication
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -1031,32 +1097,29 @@ const overviewInfoSubmit = async (
     },
   });
 
-  const cookieinfo = cookieInfo;
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const overviewPayload = getOverviewInfoSubmitPayload(csrfToken);
-
-  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
+  const overviewInfoPayload = getOverviewInfoSubmitPayload(csrfToken);
 
   const reqInfo = {
     method: "POST",
     path: "/overview-submit",
     uri: proxyUrl,
     cookies: cookieinfo,
-    data: overviewPayload,
+    data: overviewInfoPayload,
   };
 
-  const personalInfoResponse = await makeRequest(
+  const overviewInfoResponse = await makeRequest(
     reqInfo,
     application?._id as string
   );
 
-  const status = personalInfoResponse?.status;
+  const status = overviewInfoResponse?.status;
 
   if (retryCodes.includes(status)) {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -1064,14 +1127,18 @@ const overviewInfoSubmit = async (
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
   if (status === 302) {
-    const cookie = personalInfoResponse?.headers?.getSetCookie();
-    const location = personalInfoResponse?.headers?.get("Location");
+    const cookie = overviewInfoResponse?.headers?.getSetCookie();
+    const location = overviewInfoResponse?.headers?.get("Location");
 
     const path = getLocationPathname(location as string);
 
@@ -1079,20 +1146,37 @@ const overviewInfoSubmit = async (
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Overview info submitted! | Payment session started",
+          action: "Overview info submitted!",
           status: "Success",
           color: "success",
         },
       });
 
-      return {
-        statusCode: httpStatus.OK,
-        success: true,
-        path: path,
-        message: "Overview info submitted! | Payment session started",
+      await applicationService.updateByPhone(application?._id as string, {
+        serverInfo: {
+          ...application?.serverInfo,
+          action: "payment-otp",
+          cookies: cookie,
+        },
+      });
+
+      socketIo.emit("server-action", {
+        id: application?._id,
         data: {
           success: true,
-          cookies: cookie,
+          action: "payment-otp",
+        },
+      });
+
+      return {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Overview info submitted!",
+        cookies: cookie,
+        data: {
+          success: true,
+          reqPath: reqInfo.path,
+          redirectPath: path,
         },
       };
     } else {
@@ -1105,11 +1189,14 @@ const overviewInfoSubmit = async (
         },
       });
       return {
-        statusCode: status,
         success: false,
-        message: "Failed to submit personal info",
-        path: reqInfo?.path,
-        data: null,
+        statusCode: httpStatus.OK,
+        message: "Failed to submit overview info",
+        data: {
+          success: false,
+          reqPath: reqInfo.path,
+          redirectPath: path,
+        },
       };
     }
   } else {
@@ -1122,11 +1209,14 @@ const overviewInfoSubmit = async (
       },
     });
     return {
-      statusCode: status,
       success: false,
+      statusCode: httpStatus.OK,
       message: "Failed to submit overview info",
-      path: reqInfo?.path,
-      data: null,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: "",
+      },
     };
   }
 };
@@ -1166,7 +1256,7 @@ const sendPaymentOTP = async (application: IApplication, resend: number) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -1174,8 +1264,12 @@ const sendPaymentOTP = async (application: IApplication, resend: number) => {
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
@@ -1278,7 +1372,7 @@ const verifyPaymentOTP = async (application: IApplication, otp: string) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -1286,8 +1380,12 @@ const verifyPaymentOTP = async (application: IApplication, otp: string) => {
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
@@ -1400,7 +1498,7 @@ const paySlotTime = async (application: IApplication) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -1408,8 +1506,12 @@ const paySlotTime = async (application: IApplication) => {
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
 
@@ -1521,7 +1623,7 @@ const bookNow = async (application: IApplication, hashParam: string) => {
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: `Error | Status:${status} | All attempts failed.`,
+        action: `Status:${status} | All attempts failed.`,
         status: "Failed",
         color: "error",
       },
@@ -1529,11 +1631,14 @@ const bookNow = async (application: IApplication, hashParam: string) => {
     return {
       success: false,
       statusCode: status,
-      path: reqInfo?.path,
-      data: null,
+      message: `Error | Status:${status} | All attempts failed.`,
+      data: {
+        success: false,
+        reqPath: reqInfo.path,
+        redirectPath: null,
+      },
     };
   }
-
   if (status === 302) {
     socketIo.emit("server-logs", {
       id: application?._id,
@@ -1595,6 +1700,8 @@ const bookNow = async (application: IApplication, hashParam: string) => {
 
 export const serverService = {
   createNewSession,
+  mobileVerify,
+  authVerify,
   sendLoginOTP,
   vefiryLoginOTP,
   loggedOut,
