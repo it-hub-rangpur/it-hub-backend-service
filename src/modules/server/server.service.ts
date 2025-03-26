@@ -18,6 +18,7 @@ import httpStatus from "http-status";
 import { socketIo } from "../../socket";
 import { reCaptchaService } from "../reCaptcha/reCaptcha.service";
 import ApiError from "../../errorHandelars/ApiError";
+import generateNextDay from "../../utils/generateNextDay";
 
 const createNewSession = async (
   proxyUrl: string,
@@ -175,6 +176,7 @@ const mobileVerify = async (
       await applicationService.updateByPhone(application?._id as string, {
         serverInfo: {
           ...application?.serverInfo,
+          isUserLoggedIn: false,
           action: "password-verify",
           cookies,
         },
@@ -289,6 +291,7 @@ const authVerify = async (
       await applicationService.updateByPhone(application?._id as string, {
         serverInfo: {
           ...application?.serverInfo,
+          isUserLoggedIn: false,
           action: "login-otp-verify",
           cookies,
         },
@@ -468,6 +471,8 @@ const loggedOut = async (id: string) => {
   });
   const response = await applicationService.updateByPhone(id, {
     serverInfo: {
+      isUserLoggedIn: false,
+      action: "create-session",
       csrfToken: "",
       cookies: [],
     },
@@ -1129,10 +1134,14 @@ const verifyPaymentOTP = async (
 
   const res = await otpVerifyResponse?.json();
   if (res?.success) {
+    const dateSlot = res?.data?.slot_dates?.length
+      ? res?.data?.slot_dates[0]
+      : [generateNextDay()];
+
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Payment OTP verified",
+        action: "Payment OTP verified - " + JSON.stringify(dateSlot),
         status: "Success",
         color: "success",
       },
@@ -1140,7 +1149,9 @@ const verifyPaymentOTP = async (
 
     const cookieInfo = otpVerifyResponse?.headers?.getSetCookie();
     await applicationService.updateByPhone(application?._id as string, {
+      slot_dates: dateSlot,
       serverInfo: {
+        ...application?.serverInfo,
         csrfToken: csrfToken as string,
         action: "slot-time",
         cookies: cookieInfo,
@@ -1190,8 +1201,7 @@ const verifyPaymentOTP = async (
 const paySlotTime = async (
   proxyUrl: string,
   cookieInfo: string[],
-  application: IApplication,
-  date: string
+  application: IApplication
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -1202,8 +1212,9 @@ const paySlotTime = async (
     },
   });
 
+  const appointment_date = application?.slot_dates[0];
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const timeSlotPayload = getTimeSlotPayload(date, csrfToken);
+  const timeSlotPayload = getTimeSlotPayload(appointment_date, csrfToken);
 
   const reqInfo = {
     method: "POST",
@@ -1266,10 +1277,16 @@ const paySlotTime = async (
 
   const res = await getTimeResponse?.json();
   if (res?.success) {
+    const slotTime = res?.data?.slot_times?.length
+      ? res?.data?.slot_times[0]
+      : { hour: 10 };
+
+    const availableSlot = slotTime?.availableSlot ?? "Zero";
+
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Slot time fetched",
+        action: "Slot time fetched - Available slot: " + availableSlot,
         status: "Success",
         color: "success",
       },
@@ -1277,7 +1294,9 @@ const paySlotTime = async (
 
     const cookies = getTimeResponse?.headers?.getSetCookie();
     await applicationService.updateByPhone(application?._id as string, {
+      slot_time: [slotTime],
       serverInfo: {
+        ...application?.serverInfo,
         csrfToken: csrfToken as string,
         action: "captcha-token",
         cookies: cookies,
@@ -1324,8 +1343,7 @@ const paySlotTime = async (
 const bookNow = async (
   proxyUrl: string,
   cookieInfo: string[],
-  application: IApplication,
-  date: string
+  application: IApplication
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -1337,7 +1355,7 @@ const bookNow = async (
   });
 
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const booknowPayload = getBookSlotPayload(application, date, csrfToken);
+  const booknowPayload = getBookSlotPayload(application, csrfToken);
 
   const reqInfo = {
     method: "POST",
@@ -1400,19 +1418,38 @@ const bookNow = async (
 
   const data = await bookNowResponse?.json();
   if (data?.success) {
+    const paymentURL = `${data?.url}${application.paymentMethod}`;
+
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Slot Booked Successfully",
+        action: "Slot booking initiated",
         status: "Success",
         color: "success",
       },
     });
+
+    await applicationService.updateByPhone(application?._id as string, {
+      paymentStatus: {
+        status: "SUCCESS",
+        url: paymentURL,
+      },
+    });
+
+    socketIo.emit("server-action", {
+      id: application?._id,
+      data: {
+        success: true,
+        action: "payment",
+        paymentURL: paymentURL,
+      },
+    });
+
     return {
       statusCode: httpStatus.OK,
       success: true,
       path: reqInfo?.path,
-      message: "Slot Booked Successfully",
+      message: "Slot booking initiated",
       data: data,
     };
   } else {

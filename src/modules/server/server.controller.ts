@@ -44,7 +44,6 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
     });
   } else {
     const { csrfToken, userImg, redirectPath, requestPath } = response;
-
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -376,7 +375,6 @@ const verifyPaymentOTP = catchAsync(async (req: Request, res: Response) => {
 
 const getSlotTime = catchAsync(async (req: Request, res: Response) => {
   const id = req?.body?.id;
-  const appointment_date = "2025-03-27";
   const application = await applicationService.getOne(id);
 
   if (!application?._id || application?.status) {
@@ -390,8 +388,7 @@ const getSlotTime = catchAsync(async (req: Request, res: Response) => {
   const response = await serverService.paySlotTime(
     proxyUrl,
     cookiesData ?? [],
-    application,
-    appointment_date
+    application
   );
 
   if (response?.success === false) {
@@ -419,7 +416,8 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
   }
 
-  const appointment_date = "2025-03-27";
+  const appointment_date = application?.slot_dates[0];
+  const slotTime = application?.slot_time[0]?.hour ?? 10;
 
   const serverInfo = application?.serverInfo;
   const cookiesData = serverInfo?.cookies;
@@ -428,8 +426,7 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
   const response = await serverService.bookNow(
     proxyUrl,
     cookiesData,
-    application,
-    appointment_date
+    application
   );
 
   if (response?.success === false) {

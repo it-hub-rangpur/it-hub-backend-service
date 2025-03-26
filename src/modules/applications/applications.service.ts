@@ -189,6 +189,7 @@ const getReadyApplications = async (userId: string) => {
       slot_dates: item?.slot_dates?.length
         ? item?.slot_dates
         : [generateNextDay()],
+      slot_time: item?.slot_time,
       paymentStatus: item?.paymentStatus,
       status: item?.status,
       autoPayment: item?.autoPayment,

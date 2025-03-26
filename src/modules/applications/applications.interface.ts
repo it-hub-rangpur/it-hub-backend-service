@@ -31,8 +31,8 @@ export interface IApplication extends Document {
   paymentStatus: {
     status: string;
     url: string;
-    order_id: string;
-    token_no: string;
+    order_id?: string;
+    token_no?: string;
   };
   paymentDate: Date;
   autoPayment: boolean;
