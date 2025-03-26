@@ -41,6 +41,7 @@ export interface IApplication extends Document {
   createdAt: string;
   serverInfo: {
     action?: string;
+    isUserLoggedIn?: boolean;
     cookies: string[];
     csrfToken: string;
   };

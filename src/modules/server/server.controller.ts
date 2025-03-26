@@ -422,6 +422,8 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
   }
 
+  const appointment_date = "2025-03-27";
+
   const serverInfo = application?.serverInfo;
   const cookiesData = serverInfo?.cookies;
   const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
@@ -430,6 +432,7 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
     proxyUrl,
     cookiesData,
     application,
+    appointment_date,
     hashParam
   );
 

@@ -196,6 +196,7 @@ const getReadyApplications = async (userId: string) => {
       pinNumber: item?.pinNumber,
       serverInfo: {
         action: item?.serverInfo?.action,
+        isUserLoggedIn: item?.serverInfo?.isUserLoggedIn,
         csrfToken: item?.serverInfo?.csrfToken,
         isLoggedIn: false,
       },

@@ -90,6 +90,7 @@ const createNewSession = async (
   await applicationService.updateByPhone(id, {
     serverInfo: {
       action: userImg ? "application-info" : "mobile-verify",
+      isUserLoggedIn: userImg ? true : false,
       csrfToken,
       cookies,
     },
@@ -601,7 +602,7 @@ const applicationInfoSubmit = async (
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Failed to submit application info",
+          action: `Failed to submit application info | Redirected - '${path}'`,
           status: "Failed",
           color: "error",
         },
@@ -742,7 +743,7 @@ const personalInfoSubmit = async (
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Failed to submit personal info",
+          action: `Failed to submit personal info | Redirected - "${path}"`,
           status: "Failed",
           color: "error",
         },
@@ -880,7 +881,7 @@ const overviewInfoSubmit = async (
       socketIo.emit("server-logs", {
         id: application?._id,
         log: {
-          action: "Failed to submit overview info",
+          action: `Failed to submit overview info | Redirected - "${path}"`,
           status: "Failed",
           color: "error",
         },
@@ -979,7 +980,7 @@ const sendPaymentOTP = async (
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to send payment OTP",
+        action: `Failed to send payment OTP | Redirected - "${path}"`,
         status: "Failed",
         color: "error",
       },
@@ -1117,7 +1118,7 @@ const verifyPaymentOTP = async (
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to verify OTP",
+        action: `Failed to verify OTP | Redirected - "${path}"`,
         status: "Failed",
         color: "error",
       },
@@ -1254,7 +1255,7 @@ const paySlotTime = async (
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to fetch slot time",
+        action: `Failed to fetch slot time | Redirected - "${path}"`,
         status: "Failed",
         color: "error",
       },
@@ -1332,6 +1333,7 @@ const bookNow = async (
   proxyUrl: string,
   cookieInfo: string[],
   application: IApplication,
+  date: string,
   hashParam: string
 ) => {
   socketIo.emit("server-logs", {
@@ -1343,10 +1345,13 @@ const bookNow = async (
     },
   });
 
-  // const appointment_date = "2025-3-24";
-
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const booknowPayload = getBookSlotPayload(application, hashParam, csrfToken);
+  const booknowPayload = getBookSlotPayload(
+    application,
+    date,
+    hashParam,
+    csrfToken
+  );
 
   const reqInfo = {
     method: "POST",
@@ -1390,7 +1395,7 @@ const bookNow = async (
     socketIo.emit("server-logs", {
       id: application?._id,
       log: {
-        action: "Failed to book slot",
+        action: `Failed to book slot | Redirected - "${path}"`,
         status: "Failed",
         color: "error",
       },
