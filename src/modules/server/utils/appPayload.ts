@@ -95,7 +95,6 @@ export const getTimeSlotPayload = (date: string, token: string) => {
 export const getBookSlotPayload = (
   item: IApplication,
   date: string,
-  hashParam: string,
   token: string
 ) => {
   const paymentOption = paymentOptions[item?.paymentMethod];
@@ -103,7 +102,7 @@ export const getBookSlotPayload = (
     _token: token,
     appointment_date: date,
     appointment_time: 10,
-    hash_param: hashParam,
+    hash_param: item?.hash_params,
     selected_payment: paymentOption,
   };
 };

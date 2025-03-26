@@ -16,16 +16,8 @@ import {
 import { applicationService } from "../applications/applications.service";
 import httpStatus from "http-status";
 import { socketIo } from "../../socket";
-
-const proxyInfo = {
-  protocol: "http",
-  host: "103.104.143.145",
-  port: 8927,
-  auth: {
-    username: "user272565",
-    password: "uw7eg9",
-  },
-};
+import { reCaptchaService } from "../reCaptcha/reCaptcha.service";
+import ApiError from "../../errorHandelars/ApiError";
 
 const createNewSession = async (
   proxyUrl: string,
@@ -1333,8 +1325,7 @@ const bookNow = async (
   proxyUrl: string,
   cookieInfo: string[],
   application: IApplication,
-  date: string,
-  hashParam: string
+  date: string
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -1346,12 +1337,7 @@ const bookNow = async (
   });
 
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const booknowPayload = getBookSlotPayload(
-    application,
-    date,
-    hashParam,
-    csrfToken
-  );
+  const booknowPayload = getBookSlotPayload(application, date, csrfToken);
 
   const reqInfo = {
     method: "POST",
@@ -1450,64 +1436,53 @@ const bookNow = async (
       data: data,
     };
   }
+};
 
-  // if (status === 302) {
-  //   socketIo.emit("server-logs", {
-  //     id: application?._id,
-  //     log: {
-  //       action: "Failed to Booked Slot",
-  //       status: "Failed",
-  //       color: "error",
-  //     },
-  //   });
+const getCaptchaToken = async (application: IApplication) => {
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Getting Captcha Token...",
+      status: "Pending",
+      color: "error",
+    },
+  });
 
-  //   return {
-  //     statusCode: 200,
-  //     success: false,
-  //     message: "Failed to Booked Slot",
-  //     path: reqInfo?.path,
-  //     data: null,
-  //   };
-  // } else {
-  //   const data = await bookNowResponse?.json();
-  //   if (data?.success) {
-  //     socketIo.emit("server-logs", {
-  //       id: application?._id,
-  //       log: {
-  //         action: "Slot Booked Successfully",
-  //         status: "Success",
-  //         color: "success",
-  //       },
-  //     });
-  //     return {
-  //       statusCode: httpStatus.OK,
-  //       success: true,
-  //       path: reqInfo?.path,
-  //       message: "Slot Booked Successfully",
-  //       data: data,
-  //     };
-  //   } else {
-  //     const errMessage =
-  //       typeof data?.message === "string"
-  //         ? data?.message
-  //         : data?.message?.error ?? "Filed to Book slot";
-  //     socketIo.emit("server-logs", {
-  //       id: application?._id,
-  //       log: {
-  //         action: errMessage,
-  //         status: "Failed",
-  //         color: "error",
-  //       },
-  //     });
-  //     return {
-  //       statusCode: status,
-  //       success: false,
-  //       message: errMessage,
-  //       path: reqInfo?.path,
-  //       data: null,
-  //     };
-  //   }
-  // }
+  const response = await reCaptchaService.getReCaptchaTokenByAnti();
+
+  if (!response) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: "Failed to get Captcha Token",
+        status: "Failed",
+        color: "error",
+      },
+    });
+    throw new ApiError(httpStatus.BAD_REQUEST, "Failed to get Captcha Token");
+  }
+
+  socketIo.emit("server-logs", {
+    id: application?._id,
+    log: {
+      action: "Captcha Token Generated Successfully",
+      status: "Success",
+      color: "success",
+    },
+  });
+
+  await applicationService.updateByPhone(application?._id as string, {
+    hash_params: response,
+    serverInfo: { ...application?.serverInfo, action: "book-slot" },
+  });
+  socketIo.emit("server-action", {
+    id: application?._id,
+    data: {
+      success: true,
+      action: "book-slot",
+    },
+  });
+  return response;
 };
 
 export const serverService = {
@@ -1523,4 +1498,5 @@ export const serverService = {
   verifyPaymentOTP,
   paySlotTime,
   bookNow,
+  getCaptchaToken,
 };

@@ -5,8 +5,6 @@ import httpStatus from "http-status";
 import { serverService } from "./server.service";
 import { applicationService } from "../applications/applications.service";
 import ApiError from "../../errorHandelars/ApiError";
-import { reCaptchaService } from "../reCaptcha/reCaptcha.service";
-import { socketIo } from "../../socket";
 
 const proxyInfo = {
   protocol: "http",
@@ -415,7 +413,6 @@ const getSlotTime = catchAsync(async (req: Request, res: Response) => {
 
 const bookNow = catchAsync(async (req: Request, res: Response) => {
   const id = req.body.id;
-  const hashParam = req.body.hashParam;
   const application = await applicationService.getOne(id);
 
   if (!application?._id || application?.status) {
@@ -432,8 +429,7 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
     proxyUrl,
     cookiesData,
     application,
-    appointment_date,
-    hashParam
+    appointment_date
   );
 
   if (response?.success === false) {
@@ -461,7 +457,8 @@ const getCaptchaToken = catchAsync(async (req: Request, res: Response) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
   }
 
-  const response = await reCaptchaService.getReCaptchaTokenByAnti();
+  const response = await serverService.getCaptchaToken(application);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
