@@ -1,9 +1,9 @@
-const axios = require("axios");
+// const axios = require("axios");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 
 const fs = require("fs");
 const path = require("path");
-// const { fetch } = require("undici");
+const { fetch } = require("undici");
 
 const proxyInfo = {
   protocol: "http",
