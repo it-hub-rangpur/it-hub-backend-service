@@ -1007,6 +1007,15 @@ const sendPaymentOTP = async (
       },
     });
 
+    socketIo.emit("current-action", {
+      id: application?._id,
+      data: {
+        action: "Payment OTP sent!",
+        status: "Success",
+        color: "success",
+      },
+    });
+
     await applicationService.updateByPhone(application?._id as string, {
       serverInfo: {
         ...application?.serverInfo,
@@ -1170,6 +1179,7 @@ const verifyPaymentOTP = async (
       statusCode: httpStatus.OK,
       success: true,
       path: reqInfo?.path,
+      cookies: cookieInfo,
       message: "Payment OTP verified",
       data: res,
     };

@@ -195,6 +195,29 @@ const applicationInfoSubmit = catchAsync(
         data: response?.data,
       });
     } else {
+      const personalInfoResponse = await serverService.personalInfoSubmit(
+        proxyUrl,
+        response?.cookies ?? [],
+        application
+      );
+
+      if (personalInfoResponse?.success === true) {
+        const overviewInfoResponse = await serverService.overviewInfoSubmit(
+          proxyUrl,
+          personalInfoResponse?.cookies ?? [],
+          application
+        );
+
+        if (overviewInfoResponse?.success === true) {
+          await serverService.sendPaymentOTP(
+            proxyUrl,
+            overviewInfoResponse?.cookies ?? [],
+            application,
+            0
+          );
+        }
+      }
+
       sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -364,6 +387,16 @@ const verifyPaymentOTP = catchAsync(async (req: Request, res: Response) => {
       data: response?.data,
     });
   } else {
+    const getTimeResponse = await serverService.paySlotTime(
+      proxyUrl,
+      response?.cookies ?? [],
+      application
+    );
+
+    if (getTimeResponse?.success === true) {
+      await serverService?.getCaptchaToken(application);
+    }
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
