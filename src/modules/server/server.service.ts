@@ -19,6 +19,7 @@ import { socketIo } from "../../socket";
 import { reCaptchaService } from "../reCaptcha/reCaptcha.service";
 import ApiError from "../../errorHandelars/ApiError";
 import generateNextDay from "../../utils/generateNextDay";
+import Application from "../applications/applications.model";
 
 const createNewSession = async (
   proxyUrl: string,
@@ -81,6 +82,7 @@ const createNewSession = async (
   });
 
   await applicationService.updateByPhone(id, {
+    resend: 0,
     serverInfo: {
       action: userImg ? "application-info" : "mobile-verify",
       isUserLoggedIn: userImg ? true : false,
@@ -94,6 +96,15 @@ const createNewSession = async (
     data: {
       success: true,
       action: userImg ? "application-info" : "mobile-verify",
+    },
+  });
+
+  socketIo.emit("current-action", {
+    id: id,
+    data: {
+      action: "create-session",
+      status: userImg ? "Success" : "Pending",
+      color: "success",
     },
   });
 
@@ -1016,7 +1027,8 @@ const sendPaymentOTP = async (
       },
     });
 
-    await applicationService.updateByPhone(application?._id as string, {
+    await Application.findByIdAndUpdate(application?._id as string, {
+      $inc: { resend: 1 },
       serverInfo: {
         ...application?.serverInfo,
         action: "otp-verify",
@@ -1325,6 +1337,7 @@ const paySlotTime = async (
       statusCode: httpStatus.OK,
       success: true,
       path: reqInfo?.path,
+      cookies: cookies,
       message: "Slot time fetched",
       data: res,
     };

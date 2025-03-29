@@ -20,6 +20,22 @@ const createNewSession = catchAsync(async (req: Request, res: Response) => {
   const id = req.body.id;
   const application = await applicationService.getOne(id);
 
+  await new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, 5000);
+  });
+  // sendResponse(res, {
+  //   statusCode: 500,
+  //   success: true,
+  //   message: `Session Created Successfully!`,
+  //   data: {
+  //     message: "User logged in!",
+  //     csrfToken: "",
+  //     userLogin: true,
+  //   },
+  // });
+
   if (!application?._id || application?.status) {
     throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
   }
@@ -85,6 +101,11 @@ const mobileVerify = catchAsync(async (req: Request, res: Response) => {
       data: response?.data,
     });
   } else {
+    await serverService.authVerify(
+      proxyUrl,
+      response?.cookies ?? [],
+      application
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -158,6 +179,11 @@ const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
       data: response?.data,
     });
   } else {
+    await serverService.createNewSession(
+      proxyUrl,
+      response?.cookies ?? [],
+      application?._id
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -322,7 +348,6 @@ const loggedOut = catchAsync(async (req: Request, res: Response) => {
 
 const sendPaymentOTP = catchAsync(async (req: Request, res: Response) => {
   const id = req?.body?.id;
-  const resend = req?.body?.resend;
 
   const application = await applicationService.getOne(id);
 
@@ -330,6 +355,7 @@ const sendPaymentOTP = catchAsync(async (req: Request, res: Response) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
   }
 
+  const resend = application?.resend ?? 0;
   const serverInfo = application?.serverInfo;
   const cookiesData = serverInfo?.cookies;
   const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
@@ -394,7 +420,15 @@ const verifyPaymentOTP = catchAsync(async (req: Request, res: Response) => {
     );
 
     if (getTimeResponse?.success === true) {
-      await serverService?.getCaptchaToken(application);
+      const captchaToken = await serverService?.getCaptchaToken(application);
+
+      if (captchaToken?.length > 200) {
+        await serverService.bookNow(
+          proxyUrl,
+          getTimeResponse?.cookies ?? [],
+          application
+        );
+      }
     }
 
     sendResponse(res, {
@@ -432,6 +466,16 @@ const getSlotTime = catchAsync(async (req: Request, res: Response) => {
       data: response?.data,
     });
   } else {
+    if (response?.success === true) {
+      const captchaToken = await serverService?.getCaptchaToken(application);
+      if (captchaToken?.length > 200) {
+        await serverService.bookNow(
+          proxyUrl,
+          response?.cookies ?? [],
+          application
+        );
+      }
+    }
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -448,9 +492,6 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
   if (!application?._id || application?.status) {
     throw new ApiError(httpStatus.NOT_FOUND, "Application not found");
   }
-
-  const appointment_date = application?.slot_dates[0];
-  const slotTime = application?.slot_time[0]?.hour ?? 10;
 
   const serverInfo = application?.serverInfo;
   const cookiesData = serverInfo?.cookies;
@@ -490,7 +531,7 @@ const getCaptchaToken = catchAsync(async (req: Request, res: Response) => {
   const response = await serverService.getCaptchaToken(application);
 
   const proxyUrl = "";
-  if (response) {
+  if (response?.length > 200) {
     await serverService?.bookNow(
       proxyUrl,
       application?.serverInfo?.cookies ?? [],
