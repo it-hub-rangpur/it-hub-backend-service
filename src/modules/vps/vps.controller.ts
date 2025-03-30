@@ -6,8 +6,8 @@ import { fetch, ProxyAgent } from "undici";
 import sendResponse from "../../shared/SendResponse";
 import httpStatus from "http-status";
 
-const TEST_FILE_URL = "http://speedtest.tele2.net/50MB.zip";
-const FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB in bytes
+const TEST_FILE_URL = "http://speedtest.tele2.net/10MB.zip";
+const FILE_SIZE_BYTES = 10 * 1024 * 1024; // 50MB in bytes
 
 // const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
 //   const start = Date.now();
@@ -215,7 +215,7 @@ const speedTestController = catchAsync(async (req: Request, res: Response) => {
     const speedMBps = FILE_SIZE_BYTES / (1024 * 1024) / duration;
 
     const result = {
-      fileSize: "50 MB",
+      fileSize: "10 MB",
       transferTime: `${duration.toFixed(2)} seconds`,
       downloadSpeedMbps: speedMbps.toFixed(2),
       downloadSpeedMBps: speedMBps.toFixed(2),
