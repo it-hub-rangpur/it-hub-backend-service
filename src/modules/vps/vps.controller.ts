@@ -9,6 +9,91 @@ import httpStatus from "http-status";
 const TEST_FILE_URL = "http://speedtest.tele2.net/50MB.zip";
 const FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB in bytes
 
+// const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
+//   const start = Date.now();
+//   let downloadedBytes = 0;
+//   let lastLoggedPercentage = -1;
+
+//   const client = new ProxyAgent({
+//     uri: proxyUrl as string,
+//     keepAliveTimeout: 5000,
+//     keepAliveMaxTimeout: 1800000,
+//     connections: 1000,
+//     pipelining: 1,
+//   });
+
+//   const response = await fetch(url, {
+//     dispatcher: client,
+//     method: "GET",
+//     headers: {
+//       "User-Agent":
+//         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+//     },
+//   });
+
+//   if (!response.ok) {
+//     throw new Error(`HTTP error! status: ${response.status}`);
+//   }
+
+//   // Create a temp file path
+//   const tempDir = path.join(__dirname, "..", "..", "temp");
+//   if (!fs.existsSync(tempDir)) {
+//     fs.mkdirSync(tempDir, { recursive: true });
+//   }
+//   const tempFile = path.join(tempDir, `temp_speedtest_${Date.now()}`);
+
+//   return new Promise<number>((resolve, reject) => {
+//     const writer = fs.createWriteStream(tempFile);
+//     const reader = response.body?.getReader();
+
+//     if (!reader) {
+//       return reject(new Error("Failed to get readable stream from response"));
+//     }
+
+//     const processStream = ({
+//       done,
+//       value,
+//     }: {
+//       done: boolean;
+//       value?: Uint8Array;
+//     }) => {
+//       if (done) {
+//         writer.end();
+//         const duration = (Date.now() - start) / 1000;
+//         // Clean up temp file
+//         fs.unlink(tempFile, (err) => {
+//           if (err) console.error("Error deleting temp file:", err);
+//         });
+//         process.stdout.write("\n"); // New line after progress
+//         resolve(duration);
+//         return;
+//       }
+
+//       if (value) {
+//         downloadedBytes += value.length;
+//         writer.write(Buffer.from(value));
+
+//         const percentage = Math.floor(
+//           (downloadedBytes / FILE_SIZE_BYTES) * 100
+//         );
+
+//         // Only log when percentage changes
+//         if (percentage !== lastLoggedPercentage) {
+//           process.stdout.clearLine(0);
+//           process.stdout.cursorTo(0);
+//           process.stdout.write(`Downloading: ${percentage}%`);
+//           lastLoggedPercentage = percentage;
+//         }
+//       }
+
+//       reader.read().then(processStream).catch(reject);
+//     };
+
+//     reader.read().then(processStream).catch(reject);
+//     writer.on("error", reject);
+//   });
+// };
+
 const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
   const start = Date.now();
   let downloadedBytes = 0;
@@ -36,7 +121,7 @@ const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
   }
 
   // Create a temp file path
-  const tempDir = path.join(__dirname, "..", "..", "temp");
+  const tempDir = path.join("/tmp"); // Use Lambda's /tmp directory in AWS
   if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
   }
@@ -64,7 +149,6 @@ const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
         fs.unlink(tempFile, (err) => {
           if (err) console.error("Error deleting temp file:", err);
         });
-        process.stdout.write("\n"); // New line after progress
         resolve(duration);
         return;
       }
@@ -77,11 +161,9 @@ const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
           (downloadedBytes / FILE_SIZE_BYTES) * 100
         );
 
-        // Only log when percentage changes
+        // Only log percentage changes (without clearing line)
         if (percentage !== lastLoggedPercentage) {
-          process.stdout.clearLine(0);
-          process.stdout.cursorTo(0);
-          process.stdout.write(`Downloading: ${percentage}%`);
+          console.log(`Download progress: ${percentage}%`);
           lastLoggedPercentage = percentage;
         }
       }
