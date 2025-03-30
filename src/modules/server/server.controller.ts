@@ -8,13 +8,23 @@ import ApiError from "../../errorHandelars/ApiError";
 
 const proxyInfo = {
   protocol: "http",
-  host: "103.104.143.145",
-  port: 8927,
+  host: "103.174.51.75",
+  port: 7771,
   auth: {
-    username: "user272565",
-    password: "uw7eg9",
+    username: "ithub1",
+    password: "it-hub",
   },
 };
+
+// const proxyInfo = {
+//   protocol: "http",
+//   host: "103.104.143.145",
+//   port: 8927,
+//   auth: {
+//     username: "user272565",
+//     password: "uw7eg9",
+//   },
+// };
 
 const createNewSession = catchAsync(async (req: Request, res: Response) => {
   const id = req.body.id;

@@ -66,7 +66,7 @@
 
 // export default makeRequest;
 
-import { Headers, fetch, Agent } from "undici";
+import { Headers, fetch, Agent, ProxyAgent } from "undici";
 import { socketIo } from "../../../socket";
 import ApiError from "../../../errorHandelars/ApiError";
 
@@ -87,8 +87,16 @@ const makeRequest = async (
   _id: string,
   retries = 1
 ): Promise<any> => {
-  const httpsAgent = new Agent({
-    keepAliveTimeout: 300000,
+  // const httpsAgent = new Agent({
+  //   keepAliveTimeout: 300000,
+  //   keepAliveMaxTimeout: 1800000,
+  //   connections: 1000,
+  //   pipelining: 1,
+  // });
+
+  const client = new ProxyAgent({
+    uri: requestInfo.uri,
+    keepAliveTimeout: 5000,
     keepAliveMaxTimeout: 1800000,
     connections: 1000,
     pipelining: 1,
@@ -114,7 +122,7 @@ const makeRequest = async (
 
   try {
     const htmlResponse = await fetch(targetUrl + requestInfo?.path, {
-      dispatcher: httpsAgent,
+      dispatcher: client,
       method: requestInfo?.method,
       headers: headers,
       body:
