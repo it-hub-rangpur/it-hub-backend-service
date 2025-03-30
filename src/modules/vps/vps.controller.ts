@@ -108,7 +108,7 @@ const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
   });
 
   const response = await fetch(url, {
-    dispatcher: client,
+    // dispatcher: client,
     method: "GET",
     headers: {
       "User-Agent":
