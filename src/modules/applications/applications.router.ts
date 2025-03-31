@@ -5,6 +5,10 @@ import verifyedLoginUser from "../../middlewares/verifyedUser";
 const router = express.Router();
 
 router
+  .route("/get-all")
+  .get(verifyedLoginUser, applicationController.getAllApplications);
+
+router
   .route("/get-process")
   .get(verifyedLoginUser, applicationController.getReadyApplications);
 

@@ -10,7 +10,7 @@ import { transactionServices } from "../transaction/transaction.service";
 import { ITransction } from "../transaction/transaction.interface";
 import { IPaginationOptions } from "../../utils/paginationFields";
 import { paginationHelpers } from "../../helpers/PaginationHelper";
-import { SortOrder } from "mongoose";
+import { SortOrder, Types } from "mongoose";
 import axios from "axios";
 
 const create = async (payload: IApplication) => {
@@ -115,6 +115,88 @@ const getAllByAdmin = async (
     .limit(limit)
     .populate("companyId")
     .populate("assignTo");
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
+const getAllApplications = async (
+  paginationOptions: IPaginationOptions,
+  filters: IApplicationFilters
+) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
+
+  const { searchTerm, fileStatus, ...filtersData } = filters;
+
+  const andConditions = [];
+
+  if (fileStatus) {
+    if (fileStatus == "Completed") {
+      andConditions.push({
+        "paymentStatus.status": "SUCCESS",
+        status: true,
+      });
+    } else if (fileStatus == "On Payment") {
+      andConditions.push({
+        "paymentStatus.status": "SUCCESS",
+        status: false,
+      });
+    } else if (fileStatus == "On Progress") {
+      andConditions.push({
+        "paymentStatus.status": "",
+        status: false,
+      });
+    } else if (fileStatus == "all") {
+      andConditions.push({
+        $or: [
+          {
+            "paymentStatus.status": "SUCCESS",
+            status: false,
+          },
+          {
+            "paymentStatus.status": "",
+            status: false,
+          },
+          {
+            status: true,
+          },
+        ],
+      });
+    }
+  }
+
+  if (filtersData?.assignTo) {
+    andConditions.push({
+      assignTo: new Types.ObjectId(filtersData?.assignTo),
+    });
+  }
+
+  if (filtersData?.companyId) {
+    andConditions.push({
+      companyId: new Types.ObjectId(filtersData?.companyId),
+    });
+  }
+
+  const whereConditions =
+    andConditions.length > 0 ? { $and: andConditions } : {};
+
+  const sortConditions: { [key: string]: SortOrder } = {};
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder;
+  }
+
+  const total = await Application.countDocuments(whereConditions);
+  const result = await Application.find(whereConditions)
+    .sort(sortConditions)
+    .skip(skip)
+    .limit(limit);
 
   return {
     meta: {
@@ -324,4 +406,5 @@ export const applicationService = {
   moveToOngoing,
   getAllByAdmin,
   getAllCompleted,
+  getAllApplications,
 };

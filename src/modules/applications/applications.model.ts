@@ -110,10 +110,21 @@ const Application = model<IApplication, IApplicationModel>(
   applicationSchema
 );
 
-export const applicationFilterableFields = ["searchTerm", "fileStatus"];
+export const applicationFilterableFields = [
+  "searchTerm",
+  "fileStatus",
+  "sortBy",
+  "sortOrder",
+  "companyId",
+  "assignTo",
+];
 export type IApplicationFilters = {
   searchTerm?: string;
   fileStatus?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  companyId?: string;
+  assignTo?: string;
 };
 
 export const bookSearchableFields = [

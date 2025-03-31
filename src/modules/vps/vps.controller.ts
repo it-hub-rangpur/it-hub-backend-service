@@ -108,7 +108,7 @@ const testSpeedWithProgress = async (url: string, proxyUrl?: string) => {
   });
 
   const response = await fetch(url, {
-    // dispatcher: client,
+    dispatcher: client,
     method: "GET",
     headers: {
       "User-Agent":
@@ -215,7 +215,7 @@ const speedTestController = catchAsync(async (req: Request, res: Response) => {
     const speedMBps = FILE_SIZE_BYTES / (1024 * 1024) / duration;
 
     const result = {
-      fileSize: "10 MB",
+      fileSize: "50 MB",
       transferTime: `${duration.toFixed(2)} seconds`,
       downloadSpeedMbps: speedMbps.toFixed(2),
       downloadSpeedMBps: speedMBps.toFixed(2),

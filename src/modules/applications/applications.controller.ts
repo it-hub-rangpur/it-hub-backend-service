@@ -30,6 +30,23 @@ const getAll = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllApplications = catchAsync(async (req: Request, res: Response) => {
+  const paginationOptions = pick(req.query, paginationFields);
+  const filters = pick(req.query, applicationFilterableFields);
+
+  const response = await applicationService.getAllApplications(
+    paginationOptions,
+    filters
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Applications Get Successfully!",
+    data: response,
+  });
+});
+
 const getAllCompleted = catchAsync(async (req: Request, res: Response) => {
   const response = await applicationService.getAllCompleted(
     req.user as Partial<IUser>
@@ -207,4 +224,5 @@ export const applicationController = {
   moveToOngoing,
   getAllByAdmin,
   getAllCompleted,
+  getAllApplications,
 };
