@@ -11,7 +11,6 @@ import { ITransction } from "../transaction/transaction.interface";
 import { IPaginationOptions } from "../../utils/paginationFields";
 import { paginationHelpers } from "../../helpers/PaginationHelper";
 import { SortOrder, Types } from "mongoose";
-import axios from "axios";
 
 const create = async (payload: IApplication) => {
   const company = await Client.findById(payload.companyId);
@@ -181,6 +180,15 @@ const getAllApplications = async (
   if (filtersData?.companyId) {
     andConditions.push({
       companyId: new Types.ObjectId(filtersData?.companyId),
+    });
+  }
+
+  if (filtersData?.startDate && filtersData?.endDate) {
+    andConditions.push({
+      createdAt: {
+        $gte: new Date(filtersData?.startDate),
+        $lte: new Date(filtersData?.endDate),
+      },
     });
   }
 

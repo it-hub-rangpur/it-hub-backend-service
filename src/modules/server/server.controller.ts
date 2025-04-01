@@ -539,8 +539,7 @@ const getCaptchaToken = catchAsync(async (req: Request, res: Response) => {
   }
 
   const response = await serverService.getCaptchaToken(application);
-
-  const proxyUrl = "";
+  const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
   if (response?.length > 200) {
     await serverService?.bookNow(
       proxyUrl,

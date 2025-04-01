@@ -21,6 +21,9 @@ import ApiError from "../../errorHandelars/ApiError";
 import generateNextDay from "../../utils/generateNextDay";
 import Application from "../applications/applications.model";
 
+const MAX_RETRIES = 20;
+const RETRY_DELAY_MS = 1500;
+
 const createNewSession = async (
   proxyUrl: string,
   cookieinfo: string[],
@@ -511,7 +514,8 @@ const loggedOut = async (id: string) => {
 const applicationInfoSubmit = async (
   proxyUrl: string,
   cookieinfo: string[],
-  application: IApplication
+  application: IApplication,
+  retryCount = 0
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -606,6 +610,25 @@ const applicationInfoSubmit = async (
           redirectPath: path,
         },
       };
+    } else if (path === "/" && retryCount < MAX_RETRIES) {
+      socketIo.emit("server-logs", {
+        id: application?._id,
+        log: {
+          action: `Redirected - '${path}' (${
+            retryCount + 1
+          }/${MAX_RETRIES})...`,
+          status: "Pending",
+          color: "error",
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      return await applicationInfoSubmit(
+        proxyUrl,
+        cookieinfo,
+        application,
+        retryCount + 1
+      );
     } else {
       socketIo.emit("server-logs", {
         id: application?._id,
@@ -1366,7 +1389,8 @@ const paySlotTime = async (
 const bookNow = async (
   proxyUrl: string,
   cookieInfo: string[],
-  application: IApplication
+  application: IApplication,
+  retryCount = 0
 ) => {
   socketIo.emit("server-logs", {
     id: application?._id,
@@ -1440,6 +1464,22 @@ const bookNow = async (
   }
 
   const data = await bookNowResponse?.json();
+
+  if (data?.message === "Slot is not available." && retryCount < MAX_RETRIES) {
+    socketIo.emit("server-logs", {
+      id: application?._id,
+      log: {
+        action: `Slot is not available | Retry - (${
+          retryCount + 1
+        }/${MAX_RETRIES})...`,
+        status: "Failed",
+        color: "error",
+      },
+    });
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+    return bookNow(proxyUrl, cookieInfo, application, retryCount + 1);
+  }
+
   if (data?.success) {
     const paymentURL = `${data?.url}${application.paymentMethod}`;
 

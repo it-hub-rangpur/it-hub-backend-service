@@ -1,16 +1,7 @@
 import http from "http";
 import app, { allowedOrigins } from "../app";
 import { Server as SocketIOServer, Socket } from "socket.io";
-import { applicationService } from "../modules/applications/applications.service";
 import axios from "axios";
-
-interface User {
-  _id: string;
-  isActive?: boolean;
-  socketId?: string;
-}
-
-const onlineUsers: { [key: string]: User } = {}; // Object to track online users
 
 const AppServer = http.createServer(app);
 
@@ -23,15 +14,61 @@ const io = new SocketIOServer(AppServer, {
   transports: ["websocket", "polling"], // Ensure fallback to polling
 });
 
+interface IOnlineClient {
+  _id: string;
+  name: string;
+  isActive: boolean;
+  socketId: string;
+  lastSeen: Date;
+}
+[];
+
+const onlineClients: IOnlineClient[] = [];
+
 io.on("connection", (socket: Socket) => {
   console.log("New client connected:", socket.id);
-  socket.on("user-online", (userId: string) => {
-    onlineUsers[userId] = {
-      _id: userId,
-      isActive: true,
-      socketId: socket.id,
-    };
-    io.emit("online", userId); // Notify everyone that the user is online
+  socket.on("user-online", ({ _id, name }) => {
+    const existingClient = onlineClients.find((client) => client._id === _id);
+    if (existingClient) {
+      existingClient.isActive = true;
+      existingClient.socketId = socket.id;
+      existingClient.lastSeen = new Date();
+    } else {
+      onlineClients.push({
+        _id,
+        name,
+        isActive: true,
+        socketId: socket.id,
+        lastSeen: new Date(),
+      });
+    }
+    io.emit("user-status-changed", { _id, name, isOnline: true });
+  });
+
+  socket.on("user-offline", (userId: string) => {
+    const user = onlineClients.find((client) => client._id === userId);
+    if (user) {
+      user.isActive = false;
+      user.lastSeen = new Date();
+      io.emit("user-status-changed", { _id: userId, isOnline: false });
+    }
+  });
+
+  socket.on("get-online-users", (callback) => {
+    const activeUsers = onlineClients.filter((user) => user.isActive);
+    callback(activeUsers);
+  });
+
+  socket.on("disconnect", () => {
+    const userIndex = onlineClients.findIndex(
+      (user) => user.socketId === socket.id
+    );
+    if (userIndex !== -1) {
+      const user = onlineClients[userIndex];
+      onlineClients.splice(userIndex, 1);
+      io.emit("user-status-changed", { _id: user._id, isOnline: false });
+      console.log("User disconnected:", socket.id);
+    }
   });
 
   socket.on("otp-send", async ({ phone, isTesting }) => {
@@ -88,17 +125,6 @@ io.on("connection", (socket: Socket) => {
     setTimeout(() => {
       io.emit("dbblmobilebanking-otp", { otp, acc: data?.acc });
     }, randomDelay);
-  });
-
-  socket.on("disconnect", () => {
-    for (const userId in onlineUsers) {
-      if (onlineUsers[userId].socketId === socket.id) {
-        delete onlineUsers[userId];
-        io.emit("offline", userId);
-        console.log(`${userId} is offline.`);
-        break;
-      }
-    }
   });
 });
 

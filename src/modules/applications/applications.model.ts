@@ -117,6 +117,8 @@ export const applicationFilterableFields = [
   "sortOrder",
   "companyId",
   "assignTo",
+  "startDate",
+  "endDate",
 ];
 export type IApplicationFilters = {
   searchTerm?: string;
@@ -125,6 +127,8 @@ export type IApplicationFilters = {
   sortOrder?: string;
   companyId?: string;
   assignTo?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 export const bookSearchableFields = [
