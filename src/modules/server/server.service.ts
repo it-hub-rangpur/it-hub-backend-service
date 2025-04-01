@@ -21,6 +21,16 @@ import ApiError from "../../errorHandelars/ApiError";
 import generateNextDay from "../../utils/generateNextDay";
 import Application from "../applications/applications.model";
 
+interface ServerResponse {
+  success: boolean;
+  statusCode: number;
+  cookies?: string[];
+  path?: string;
+  message?: string;
+  data?: any;
+}
+export interface BookNowResponse {}
+
 const MAX_RETRIES = 20;
 const RETRY_DELAY_MS = 1500;
 
@@ -516,7 +526,7 @@ const applicationInfoSubmit = async (
   cookieinfo: string[],
   application: IApplication,
   retryCount = 0
-) => {
+): Promise<ServerResponse> => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {
@@ -1391,7 +1401,7 @@ const bookNow = async (
   cookieInfo: string[],
   application: IApplication,
   retryCount = 0
-) => {
+): Promise<ServerResponse> => {
   socketIo.emit("server-logs", {
     id: application?._id,
     log: {

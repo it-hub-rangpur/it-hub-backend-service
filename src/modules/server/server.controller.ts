@@ -204,7 +204,7 @@ const verifyLoginOTP = catchAsync(async (req: Request, res: Response) => {
 });
 
 const applicationInfoSubmit = catchAsync(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<any> => {
     const id = req?.body?.id;
 
     const application = await applicationService.getOne(id);
