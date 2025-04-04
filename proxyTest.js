@@ -1,9 +1,9 @@
 // const axios = require("axios");
-const { HttpsProxyAgent } = require("https-proxy-agent");
+// const { HttpsProxyAgent } = require("https-proxy-agent");
 
 const fs = require("fs");
 const path = require("path");
-const { fetch } = require("undici");
+const { fetch, ProxyAgent, Headers } = require("undici");
 
 // const proxyInfo = {
 //   protocol: "http",
@@ -33,15 +33,25 @@ const testSpeedWithProgress = async (url, proxyUrl) => {
   let downloadedBytes = 0;
   let lastLoggedPercentage = -1;
 
-  const agent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined;
+  // const agent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined;
+  console.log(`Testing proxy: ${proxyUrl.replace(/:[^@]+@/, ":*****@")}`);
+  const dispatcher = new ProxyAgent(proxyUrl);
+
+  const headers = new Headers();
+  headers.set("accept-language", "en-US,en;q=0.9");
+  headers.set("accept-encoding", "gzip, deflate, br");
+  headers.set("connection", "keep-alive");
+  headers.set("Accept", "application/x-www-form-urlencoded;charset=UTF-8;");
+  headers.set(
+    "Content-Type",
+    "application/x-www-form-urlencoded;charset=UTF-8; application/json;"
+  );
 
   const response = await fetch(url, {
+    dispatcher: dispatcher,
     method: "GET",
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-    },
-    agent,
+    headers: headers,
+    // agent,
   });
 
   if (!response.ok) {
@@ -92,8 +102,29 @@ const testSpeedWithProgress = async (url, proxyUrl) => {
     const proxyUrl = `http://${proxyInfo.auth.username}:${proxyInfo.auth.password}@${proxyInfo.host}:${proxyInfo.port}`;
     console.log(`Testing proxy: ${proxyUrl.replace(/:[^@]+@/, ":*****@")}`);
 
-    // Warm-up connection
-    console.log("Performing warm-up request...");
+    const headers = new Headers();
+    headers.set("accept-language", "en-US,en;q=0.9");
+    headers.set("accept-encoding", "gzip, deflate, br");
+    headers.set("connection", "keep-alive");
+    headers.set("Accept", "application/x-www-form-urlencoded;charset=UTF-8;");
+    headers.set(
+      "Content-Type",
+      "application/x-www-form-urlencoded;charset=UTF-8; application/json;"
+    );
+
+    const response = await fetch("https://payment.ivacbd.com", {
+      // dispatcher: new ProxyAgent(proxyUrl),
+      method: "GET",
+      headers: headers,
+    });
+
+    const status = response.status;
+    const responseReader = response.headers;
+    console.log("Status:", status);
+    console.log("Headers:", responseReader);
+
+    // // Warm-up connection
+    // console.log("Performing warm-up request...");
     await testSpeedWithProgress("https://example.com", proxyUrl);
 
     // Actual speed test
