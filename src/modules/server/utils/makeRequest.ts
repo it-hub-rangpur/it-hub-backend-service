@@ -122,7 +122,7 @@ const makeRequest = async (
 
   try {
     const htmlResponse = await fetch(targetUrl + requestInfo?.path, {
-      dispatcher: client,
+      // dispatcher: client,
       method: requestInfo?.method,
       headers: headers,
       body:

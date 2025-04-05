@@ -15,13 +15,23 @@ const { fetch, ProxyAgent, Headers } = require("undici");
 //   },
 // };
 
+// const proxyInfo = {
+//   protocol: "http",
+//   host: "103.174.51.75",
+//   port: 7771,
+//   auth: {
+//     username: "ithub1",
+//     password: "it-hub",
+//   },
+// };
+
 const proxyInfo = {
   protocol: "http",
-  host: "103.174.51.75",
-  port: 7771,
+  host: "103.31.209.201",
+  port: 50100,
   auth: {
-    username: "ithub1",
-    password: "it-hub",
+    username: "pkshohag240",
+    password: "UTKroTZ94x",
   },
 };
 
