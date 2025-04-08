@@ -92,13 +92,17 @@ export const getTimeSlotPayload = (date: string, token: string) => {
   };
 };
 
-export const getBookSlotPayload = (item: IApplication, token: string) => {
+export const getBookSlotPayload = (
+  item: IApplication,
+  captchaToken: string,
+  token: string
+) => {
   const paymentOption = paymentOptions[item?.paymentMethod];
   return {
     _token: token,
     appointment_date: item?.slot_dates[0],
     appointment_time: item?.slot_time[0]?.hour ?? 10,
-    hash_param: item?.hash_params,
+    hash_param: captchaToken,
     selected_payment: paymentOption,
   };
 };

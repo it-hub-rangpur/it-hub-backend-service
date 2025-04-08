@@ -1,29 +1,6 @@
-// const axios = require("axios");
-// const { HttpsProxyAgent } = require("https-proxy-agent");
-
 const fs = require("fs");
 const path = require("path");
 const { fetch, ProxyAgent, Headers } = require("undici");
-
-// const proxyInfo = {
-//   protocol: "http",
-//   host: "103.104.143.145",
-//   port: 8927,
-//   auth: {
-//     username: "user272565",
-//     password: "uw7eg9",
-//   },
-// };
-
-// const proxyInfo = {
-//   protocol: "http",
-//   host: "103.174.51.75",
-//   port: 7771,
-//   auth: {
-//     username: "ithub1",
-//     password: "it-hub",
-//   },
-// };
 
 const proxyInfo = {
   protocol: "http",
@@ -58,7 +35,7 @@ const testSpeedWithProgress = async (url, proxyUrl) => {
   );
 
   const response = await fetch(url, {
-    dispatcher: dispatcher,
+    // dispatcher: dispatcher,
     method: "GET",
     headers: headers,
     // agent,

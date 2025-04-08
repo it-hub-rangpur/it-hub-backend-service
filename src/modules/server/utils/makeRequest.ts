@@ -17,7 +17,7 @@ export interface IMakeRequest {
 const makeRequest = async (
   requestInfo: IMakeRequest,
   _id: string,
-  retries = 1
+  retries = 20
 ): Promise<any> => {
   const httpsAgent = new Agent({
     keepAliveTimeout: 300000,

@@ -436,7 +436,8 @@ const verifyPaymentOTP = catchAsync(async (req: Request, res: Response) => {
         await serverService.bookNow(
           proxyUrl,
           getTimeResponse?.cookies ?? [],
-          application
+          application,
+          captchaToken
         );
       }
     }
@@ -482,10 +483,12 @@ const getSlotTime = catchAsync(async (req: Request, res: Response) => {
         await serverService.bookNow(
           proxyUrl,
           response?.cookies ?? [],
-          application
+          application,
+          captchaToken
         );
       }
     }
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -510,7 +513,8 @@ const bookNow = catchAsync(async (req: Request, res: Response) => {
   const response = await serverService.bookNow(
     proxyUrl,
     cookiesData,
-    application
+    application,
+    application?.hash_params
   );
 
   if (response?.success === false) {
@@ -544,7 +548,8 @@ const getCaptchaToken = catchAsync(async (req: Request, res: Response) => {
     await serverService?.bookNow(
       proxyUrl,
       application?.serverInfo?.cookies ?? [],
-      application
+      application,
+      response
     );
   }
 

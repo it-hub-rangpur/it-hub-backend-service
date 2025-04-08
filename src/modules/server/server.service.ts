@@ -1400,6 +1400,7 @@ const bookNow = async (
   proxyUrl: string,
   cookieInfo: string[],
   application: IApplication,
+  captchaToken: string,
   retryCount = 0
 ): Promise<ServerResponse> => {
   socketIo.emit("server-logs", {
@@ -1412,7 +1413,11 @@ const bookNow = async (
   });
 
   const csrfToken = application?.serverInfo?.csrfToken ?? "";
-  const booknowPayload = getBookSlotPayload(application, csrfToken);
+  const booknowPayload = getBookSlotPayload(
+    application,
+    captchaToken,
+    csrfToken
+  );
 
   const reqInfo = {
     method: "POST",
@@ -1487,7 +1492,13 @@ const bookNow = async (
       },
     });
     await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-    return bookNow(proxyUrl, cookieInfo, application, retryCount + 1);
+    return bookNow(
+      proxyUrl,
+      cookieInfo,
+      application,
+      captchaToken,
+      retryCount + 1
+    );
   }
 
   if (data?.success) {
