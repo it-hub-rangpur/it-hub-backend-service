@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import { serverService } from "./server.service";
 import { applicationService } from "../applications/applications.service";
 import ApiError from "../../errorHandelars/ApiError";
+import { IApplication } from "../applications/applications.interface";
 
 const proxyInfo = {
   protocol: "http",
@@ -420,23 +421,26 @@ const verifyPaymentOTP = catchAsync(async (req: Request, res: Response) => {
       statusCode: response?.statusCode || 500,
       success: response?.success || false,
       message: response?.message,
-      data: response?.data,
+      data: response?.data?.res,
     });
   } else {
     const getTimeResponse = await serverService.paySlotTime(
       proxyUrl,
       response?.cookies ?? [],
-      application
+      { ...application, slot_dates: response?.data?.slot_dates }
     );
 
     if (getTimeResponse?.success === true) {
       const captchaToken = await serverService?.getCaptchaToken(application);
-
       if (captchaToken?.length > 200) {
         await serverService.bookNow(
           proxyUrl,
           getTimeResponse?.cookies ?? [],
-          application,
+          {
+            ...application,
+            slot_dates: response?.data?.slot_dates,
+            slot_time: response?.data?.slot_time,
+          },
           captchaToken
         );
       }
@@ -483,7 +487,7 @@ const getSlotTime = catchAsync(async (req: Request, res: Response) => {
         await serverService.bookNow(
           proxyUrl,
           response?.cookies ?? [],
-          application,
+          { ...application, slot_time: response?.data?.slot_time },
           captchaToken
         );
       }

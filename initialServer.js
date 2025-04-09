@@ -189,11 +189,11 @@ testSpeedWithProgress()
   .then((duration) => {
     const speedMbps = (FILE_SIZE_BYTES * 8) / (1024 * 1024) / duration;
     console.log(`
-      Speed Test Results:
-      - File Size: 50 MB
-      - Transfer Time: ${duration.toFixed(2)} seconds
-      - Download Speed: ${speedMbps.toFixed(2)} Mbps
-    `);
+        Speed Test Results:
+        - File Size: 50 MB
+        - Transfer Time: ${duration.toFixed(2)} seconds
+        - Download Speed: ${speedMbps.toFixed(2)} Mbps
+      `);
   })
   .catch((error) => {
     console.error("\nSpeed test failed:", error.message);

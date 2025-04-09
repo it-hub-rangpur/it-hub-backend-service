@@ -1187,6 +1187,8 @@ const verifyPaymentOTP = async (
   }
 
   const res = await otpVerifyResponse?.json();
+  console.log("Otp verify", res);
+
   if (res?.success) {
     const dateSlot = res?.data?.slot_dates?.length
       ? res?.data?.slot_dates[0]
@@ -1226,7 +1228,7 @@ const verifyPaymentOTP = async (
       path: reqInfo?.path,
       cookies: cookieInfo,
       message: "Payment OTP verified",
-      data: res,
+      data: { res, slot_dates: dateSlot },
     };
   } else {
     const message = res?.message;
@@ -1331,6 +1333,8 @@ const paySlotTime = async (
   }
 
   const res = await getTimeResponse?.json();
+  console.log("Slot time", res);
+
   if (res?.success) {
     const slotTime = res?.data?.slot_times?.length
       ? res?.data?.slot_times[0]
@@ -1372,7 +1376,7 @@ const paySlotTime = async (
       path: reqInfo?.path,
       cookies: cookies,
       message: "Slot time fetched",
-      data: res,
+      data: { res, slot_time: slotTime },
     };
   } else {
     const message = res?.message;
@@ -1479,6 +1483,8 @@ const bookNow = async (
   }
 
   const data = await bookNowResponse?.json();
+
+  console.log("book now", data);
 
   if (data?.message === "Slot is not available." && retryCount < MAX_RETRIES) {
     socketIo.emit("server-logs", {
